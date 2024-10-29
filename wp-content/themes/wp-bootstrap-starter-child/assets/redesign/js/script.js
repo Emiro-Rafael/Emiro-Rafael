@@ -175,6 +175,124 @@ if(typeof fadeToggle === 'undefined') {
     }
   }
 }
+if(typeof animateHeight === 'undefined') {
+  function animateHeight(element, duration, startHeight, targetHeight, onComplete) {
+    let elStyles = window.getComputedStyle(element)
+    let paddingTop = elStyles.paddingTop.replace('px', '')
+    let paddingBottom = elStyles.paddingBottom.replace('px', '')
+    if (!startHeight) {
+      startHeight = element.clientHeight
+    }
+    let currentHeight = startHeight;
+
+
+    element.style.transition = '';
+
+    if (targetHeight) {
+      if (paddingTop) {
+        startHeight -= paddingTop
+        element.style.paddingTop = '0'
+        setTimeout(function () {
+          element.style.transition = `padding ${duration}ms linear`
+          element.style.paddingTop = paddingTop + 'px'
+        }, 10)
+      }
+      if (paddingBottom) {
+        startHeight -= paddingBottom
+        element.style.paddingBottom = '0px'
+        setTimeout(function () {
+          element.style.transition = `padding ${duration}ms linear`
+          element.style.paddingBottom = paddingBottom + 'px'
+        }, 10)
+      }
+      currentHeight = startHeight
+    } else {
+      if (paddingTop) {
+        element.style.transition = `padding ${duration}ms linear`
+        element.style.paddingTop = '0px'
+      }
+      if (paddingBottom) {
+        element.style.transition = `padding ${duration}ms linear`
+        element.style.paddingBottom = '0px'
+      }
+    }
+    if ((startHeight / targetHeight) !== Infinity) {
+      duration = duration - (duration * (startHeight / targetHeight))
+    }
+
+    if (element.animation && element.animation.stop) {
+      element.animation.stop();
+    }
+
+    function updateHeight() {
+      const elapsedTime = performance.now() - startTime;
+      const progress = Math.min(1, elapsedTime / duration);
+      currentHeight = startHeight + progress * (targetHeight - startHeight);
+      element.style.height = currentHeight.toFixed(2) + 'px';
+
+      if (progress < 1) {
+        element.animation.raf = requestAnimationFrame(updateHeight);
+      } else {
+        element.style.height = '';
+        element.style.paddingTop = '';
+        element.style.paddingBottom = '';
+        element.style.overflow = '';
+        element.style.transition = '';
+        element.animation = false;
+        if (!targetHeight) {
+          element.style.display = 'none'
+        }
+        if (onComplete) {
+          onComplete();
+        }
+      }
+    }
+
+    function stopAnimation() {
+      cancelAnimationFrame(element.animation.raf);
+    }
+
+    const startTime = performance.now();
+    element.animation = {
+      raf: 0,
+      type: targetHeight > startHeight ? 'slideDown' : 'slideUp',
+      stop: stopAnimation,
+    };
+    updateHeight();
+  }
+}
+if(typeof slideDown === 'undefined') {
+  function slideDown(element, duration, display = 'block', onComplete) {
+    let startHeight = element.clientHeight;
+    element.style.display = display;
+    element.style.height = 'unset'
+    const targetHeight = element.clientHeight;
+    element.style.height = '0px';
+    element.style.overflow = 'hidden';
+
+    console.log(targetHeight, display)
+
+    animateHeight(element, duration, startHeight, targetHeight, onComplete);
+  }
+}
+if(typeof slideUp === 'undefined') {
+  function slideUp(element, duration, onComplete) {
+    const targetHeight = 0;
+    element.style.overflow = 'hidden';
+
+    animateHeight(element, duration, false, targetHeight, onComplete);
+  }
+}
+if(typeof slideToggle === 'undefined') {
+  function slideToggle(target, duration, display = 'block', afterFunction) {
+    console.log(!target.animation && window.getComputedStyle(target).display === 'none')
+    if ((target.animation && target.animation.type === 'slideUp') || (!target.animation && window.getComputedStyle(target).display === 'none')) {
+      return slideDown(target, duration, display, afterFunction);
+    } else {
+      return slideUp(target, duration, afterFunction);
+    }
+  }
+}
 
 function validate(form, newOpts = {}) {
   if(!hasPluginRequirements('validate', ['printf', 'selectAll'])){
@@ -1005,6 +1123,11 @@ function fadingPages(context, opts) {
     show: showPage
   }
 }
+function escapeHtml(unsafeText) {
+  const div = document.createElement('div');
+  div.textContent = unsafeText;
+  return div.innerHTML;
+}
 
 function blocks() {
   let methods = {
@@ -1146,12 +1269,27 @@ function blocks() {
         validate(form, validationOpts)
       })
     },
+    '.s-menu': function (menu){
+      menu = menu[0]
+      let menuBtn = document.querySelector('.header__burger')
+
+      menuBtn.addEventListener('click', function () {
+        console.log(menu)
+        slideToggle(menu, 300)
+        document.body.classList.toggle('s-menu-open')
+      })
+      menu.querySelectorAll('a').forEach(item=>item.addEventListener('click', function () {
+        slideUp(menu, 300)
+        document.body.classList.remove('s-menu-open')
+      }))
+    },
     '.warehouse': function (sections) {
       let section = sections[0]
       let barcodeInput = document.getElementById('barcode-input');
       let currentBarcodeInstance;
       let sounds = {
         attention: new Audio(template_path+'/assets/redesign/audio/attention.wav'),
+        attention_2: new Audio(template_path+'/assets/redesign/audio/attention_2.wav'),
         incorrect: new Audio(template_path+'/assets/redesign/audio/incorrect.wav'),
       }
       let pagesCallbacks = {
@@ -1159,6 +1297,7 @@ function blocks() {
           let modals = {
             'queue': document.getElementById('warehouse-pick-queue'),
             'quantity': document.getElementById('warehouse-pick-quantity'),
+            'customization': document.getElementById('warehouse-pick-customization'),
             'barcode': document.getElementById('warehouse-pick-barcode'),
           }
 
@@ -1250,6 +1389,24 @@ function blocks() {
               }
             });
           }
+          function showPickCustomizationPopup(text = '', afterFunction = ()=>{}) {
+            modals.customization.querySelector('.js-pick-customization').textContent = text
+
+            Fancybox.show([{
+              src: '#'+modals.customization.id,
+              type: 'inline',
+              placeFocusBack: false,
+              trapFocus: false,
+              autoFocus: false,
+            }], {
+              dragToClose: false,
+              on: {
+                "destroy": (event, fancybox, slide) => {
+                  afterFunction()
+                },
+              }
+            });
+          }
 
           function startPick(order) {
             let activeItem
@@ -1267,7 +1424,7 @@ function blocks() {
               ${Object.entries(order.items).map(([key, item], index) => {
                 if (typeof item === 'object' && !item.item_name) {
                   return Object.entries(item).map(([subKey, subItem], subIndex) => `
-                    <div class="warehouse__pick-item" data-barcode="${subItem.barcode}" data-quantity="${subItem.quantity}" ${index === 0 && subIndex === 0 ? 'style="display: block"' : ''}>
+                    <div class="warehouse__pick-item" data-barcode="${subItem.barcode}" data-quantity="${subItem.quantity}" data-customization="${escapeHtml(subItem.customization)}" ${index === 0 && subIndex === 0 ? 'style="display: block"' : ''}>
                       <div class="warehouse__pick-title">
                         <span>Item ${counter++} of ${order.total_items}</span>
                       </div>
@@ -1288,7 +1445,7 @@ function blocks() {
                 }
                 // For normal items
                 return `
-                  <div class="warehouse__pick-item" data-barcode="${item.barcode}" data-quantity="${item.quantity}" ${index === 0 ? 'style="display: block"' : ''}>
+                  <div class="warehouse__pick-item" data-barcode="${item.barcode}" data-quantity="${item.quantity}" data-customization="${escapeHtml(item.customization)}" ${index === 0 ? 'style="display: block"' : ''}>
                     <div class="warehouse__pick-title">
                       <span>Item ${counter++} of ${order.total_items}</span>
                     </div>
@@ -1406,8 +1563,25 @@ function blocks() {
                   }
                 }
 
+
                 if(nextItem) {
-                  if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
+                  if(activeItem.dataset.customization) {
+                    sounds.attention_2.play().then(r => {
+                      sounds.attention_2.currentTime = 0
+                    })
+                    showPickCustomizationPopup(activeItem.dataset.customization, function () {
+                      if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
+                        sounds.attention.play().then(r => {
+                          sounds.attention.currentTime = 0
+                        })
+                        showPickQuantityPopup(activeItem.dataset.quantity, function () {
+                          continueNext()
+                        })
+                      } else {
+                        continueNext()
+                      }
+                    })
+                  } else if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
                     sounds.attention.play().then(r => {
                       sounds.attention.currentTime = 0
                     })
@@ -1435,6 +1609,29 @@ function blocks() {
             if(existingEl && existingEl.dataset.orderId == warehouse_active_pick_order.id){
               return;
             }
+            if((issues = checkBarcodes(warehouse_active_pick_order)).length) {
+              alert('We cant proceed with empty barcode for: ' + issues.join('\n'));
+              if(warehouse_active_pick_order.id) aborPicking(warehouse_active_pick_order.id, (xhr) => {
+                let data = xhr.responseText
+                try { data = JSON.parse(data) } catch (error) {}
+                if (xhr.status === 200) {
+                  clearTimeout(inactivityTimeout);
+                  let existingEl = pickPage.querySelector('.warehouse__pick')
+  
+                  if(existingEl){
+                    existingEl.remove()
+                  }
+                  if(currentBarcodeInstance){
+                    currentBarcodeInstance.destroy()
+                  }
+  
+                  warehouse_active_pick_order = {}
+                  pagesInstance.show('main')
+                }
+              });
+              return;
+            } 
+              
             startPick(warehouse_active_pick_order)
           } else {
             showPickQueuePopup()
@@ -1445,6 +1642,34 @@ function blocks() {
           } else {
             pickPage.initted = true
           }
+
+          function aborPicking(order_id, cb) {
+            let formData = new FormData();
+            let xhr = new XMLHttpRequest();
+
+            formData.append('action', 'return_order_to_queue')
+            formData.append('order_id', order_id)
+
+            xhr.open('post', '/wp-admin/admin-ajax.php');
+            xhr.send(formData);
+            xhr.onload = function() {
+              if (cb) cb(xhr);
+            }
+          }
+
+          function checkBarcodes(order) {
+            const issues = [];
+            Object.entries(order.items).forEach(([itemId, item]) => {
+                if (itemId.startsWith('country-')) {
+                    Object.values(item).forEach(subItem => 
+                        !subItem.barcode && issues.push(`Order ${order.id}, Item ${itemId}: ${subItem.item_name}`)
+                    );
+                } else {
+                    !item.barcode && issues.push(`Order ${order.id}, Item ${itemId}: ${item.item_name}`);
+                }
+            });
+            return issues;
+          };
 
           dynamicListener('click', '.js-pick-start', function (e) {
             e.preventDefault()
@@ -1463,14 +1688,40 @@ function blocks() {
               let data = xhr.responseText
               try { data = JSON.parse(data) } catch (error) {}
               if (xhr.status === 200) {
+
                 modals.queue.classList.add('can-close')
                 Fancybox.close()
                 btn.removeAttribute('disabled')
+
+                if((issues = checkBarcodes(data.data)).length) {
+                  alert('We cant proceed with empty barcode for: ' + issues.join('\n'));
+                  if(data.data.id) aborPicking(data.data.id, (xhr) => {
+                    let data = xhr.responseText
+                    try { data = JSON.parse(data) } catch (error) {}
+                    if (xhr.status === 200) {
+                      clearTimeout(inactivityTimeout);
+                      let existingEl = pickPage.querySelector('.warehouse__pick')
+      
+                      if(existingEl){
+                        existingEl.remove()
+                      }
+                      if(currentBarcodeInstance){
+                        currentBarcodeInstance.destroy()
+                      }
+      
+                      warehouse_active_pick_order = {}
+                      pagesInstance.show('main')
+                    }
+                  });
+                  return;
+                } 
+
                 startPick(data.data)
                 warehouse_active_pick_order = data.data
               }
             };
           })
+
           dynamicListener('click', '.js-pick-complete', function (e) {
             e.preventDefault()
             let btn = this
@@ -1505,40 +1756,31 @@ function blocks() {
               btn.removeAttribute('disabled')
             };
           })
-          dynamicListener('click', '.js-pick-return', function (e) {
+          dynamicListener('click', '.js-pick-return', function (e) {            
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
-            let formData = new FormData();
-            let xhr = new XMLHttpRequest();
-
             btn.setAttribute('disabled', 'disabled')
-
-            formData.append('action', 'return_order_to_queue')
-            formData.append('order_id', orderId)
-
-            xhr.open('post', '/wp-admin/admin-ajax.php');
-            xhr.send(formData);
-            xhr.onload = function() {
-              let data = xhr.responseText
-              try { data = JSON.parse(data) } catch (error) {}
-              if (xhr.status === 200) {
-                clearTimeout(inactivityTimeout);
-                let existingEl = pickPage.querySelector('.warehouse__pick')
-
-                if(existingEl){
-                  existingEl.remove()
+            let orderId = btn.closest('[data-order-id]').dataset.orderId;
+            aborPicking(orderId, (xhr) => {
+                let data = xhr.responseText
+                try { data = JSON.parse(data) } catch (error) {}
+                if (xhr.status === 200) {
+                  clearTimeout(inactivityTimeout);
+                  let existingEl = pickPage.querySelector('.warehouse__pick')
+  
+                  if(existingEl){
+                    existingEl.remove()
+                  }
+                  if(currentBarcodeInstance){
+                    currentBarcodeInstance.destroy()
+                  }
+  
+                  warehouse_active_pick_order = {}
+                  pagesInstance.show('main')
                 }
-                if(currentBarcodeInstance){
-                  currentBarcodeInstance.destroy()
-                }
-
-                warehouse_active_pick_order = {}
-                pagesInstance.show('main')
-              }
-
-              btn.removeAttribute('disabled')
-            };
+  
+                btn.removeAttribute('disabled')
+            });
           })
         },
         'pack': function (packPage) {
@@ -1566,6 +1808,10 @@ function blocks() {
             } else {
               errorText.style.display = 'none'
             }
+
+            sounds.incorrect.play().then(r => {
+              sounds.incorrect.currentTime = 0
+            })
 
             Fancybox.show([{
               src: '#'+modals.error.id,

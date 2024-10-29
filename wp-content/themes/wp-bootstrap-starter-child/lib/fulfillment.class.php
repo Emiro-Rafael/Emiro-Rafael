@@ -297,7 +297,7 @@ class Fulfillment
             $has_preorder_addons = false;
             foreach($addons as $addon_order)
             {
-                $addon_purchases = str_replace(["'", ' '], ['"', ''], $addon_order->purchased);
+                $addon_purchases = str_replace("'", '"', $addon_order->purchased);
                 $addon_items = unserialize($addon_purchases);
 
                 if($this->_checkForPreorders( array_keys($addon_items))) {
@@ -305,7 +305,7 @@ class Fulfillment
                 }
             }
             
-            $purchased = str_replace(["'", ' '], ['"', ''], $result->purchased);
+            $purchased = str_replace("'", '"', $result->purchased);
             $items = unserialize($purchased);
             if(!$has_preorder_addons && !$user_with_hidden && !$this->_checkForPreorders( array_keys($items)) )
             {
@@ -323,7 +323,7 @@ class Fulfillment
 
     private function _checkForPreorders( $post_ids )
     {
-        /*foreach( $post_ids as $post_id )
+        foreach( $post_ids as $post_id )
         {
             $preorder_date = get_post_meta( $post_id, 'preorder-shipping-date', true );
 
@@ -331,7 +331,7 @@ class Fulfillment
             {
                 return true;
             }
-        }*/
+        }
         return false;
     }
 
@@ -343,7 +343,7 @@ class Fulfillment
         }
         else
         {
-            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'processing' AND in_main_table = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE())");
+            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'processing' AND in_main_table = 0");
         }
         
         $stmt->bindParam(":user_id", $this->user_id);
@@ -360,7 +360,7 @@ class Fulfillment
         $rows = $stmt->fetchAll(PDO::FETCH_OBJ);
         foreach($rows as $row)
         {
-            $purchased = str_replace(["'", ' '], ['"', ''], $row->purchased);
+            $purchased = str_replace("'", '"', $row->purchased);
             $purchase_items = unserialize($purchased);
             if( $this->_checkForPreorders( array_keys($purchase_items) ) )
             {
@@ -507,7 +507,7 @@ class Fulfillment
             {
                 continue;
             }
-            $purchased = str_replace(["'", ' '], ['"', ''], $order->purchased);
+            $purchased = str_replace("'", '"', $order->purchased);
             $items = unserialize($purchased);
             if( is_array($items) && !$this->_checkForPreorders( array_keys($items) ) )
             {

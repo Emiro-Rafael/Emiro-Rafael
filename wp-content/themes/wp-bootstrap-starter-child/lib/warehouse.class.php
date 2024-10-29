@@ -329,21 +329,40 @@ class Warehouse
         return $image_url;
     }
 
+    private function getBarcodeFromPart($part) {
+        if($part == NULL) {
+            return "";
+        }
+
+        return preg_match('/\d{5,}/', $part->full_name, $m) ? $m[0] : '';
+
+        // if($barcode_hash == "") {
+        //     return "";
+        // }
+        // $full_name = $part->fill_name;
+        // $full_name_arr = explode($full_name, " | ");
+        // if(count($full_name_arr) >= 3) {
+        //     return $full_name_arr[2];
+        // }
+        // return "";
+    }
+
     private function _getCustomerItems($printable = false)
     {
         if($printable)
         {
-            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'printable' AND in_main_table = 0 AND hidden = 0 AND session_id IS NULL");
+            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'printable' AND in_main_table = 0 AND hidden = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
         }
         else
         {
-            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'processing' AND in_main_table = 0 AND hidden = 0 AND session_id IS NULL");
+            $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'processing' AND in_main_table = 0 AND hidden = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
         }
         
         $stmt->bindParam(":user_id", $this->user_id);
         $stmt->bindParam(":shipping_address", $this->address_id);
         $stmt->execute();
 
+        $inventree = Inventree::getInstance();
         $items = array();
         $ids = array();
         $payment_ids = array();
@@ -380,38 +399,74 @@ class Warehouse
                 switch( get_post_type( $post_id ) )
                 {
                     case 'snack':
-                        if( !array_key_exists( $post_id, $items ) )
-                        {
-                            $total_items++;
-                            $items[$post_id] = new stdClass();
-                            $items[$post_id]->item_name = get_the_title( $post_id );
-                            if(is_array($details)) {
-                                foreach($details as $quantity)
+
+                        $internal_id_code = get_post_meta( $post_id, 'internal-id-code', true );
+                        $main_part = $inventree -> getInventreePartByIPN($internal_id_code);
+                        
+                        if($main_part != NULL) {
+                            $part_id = $main_part->pk;
+                            $boms = $inventree->getBOMByPartId($part_id);
+
+                            if(empty($boms)) {
+                                if( !array_key_exists( $part_id, $items ) )
                                 {
-                                    $items[$post_id]->quantity = $quantity;
-                                }
-                            } else {
-                                $items[$post_id]->quantity = $details;
+                                    $total_items++;
+                                    $items[$part_id] = new stdClass();
+                                    $items[$part_id]->item_name = get_the_title( $post_id );
+                                    if(is_array($details)) {
+                                        foreach($details as $quantity)
+                                        {
+                                            $items[$part_id]->quantity = $quantity;
+                                        }
+                                    } else {
+                                        $items[$part_id]->quantity = $details;
+                                    }
+                                    $items[$part_id]->barcode = $this->getBarcodeFromPart( $main_part);
+                                    $items[$part_id]->img = $this->getItemImage($post_id);
+                                }else
+                                {
+                                    $items[$part_id]->quantity += $details;
+                                } 
                             }
-                            $items[$post_id]->barcode = get_post_meta( $post_id, 'internal-id-code', true);
-                            $items[$post_id]->img = $this->getItemImage($post_id);
+                            else {
+                                foreach($boms as $bom) {
+                                    $sub_part_id = $bom->sub_part;
+                                    $sub_part_quantity = $bom->quantity;
+                                    $sub_part = $inventree->getInventreePartById($sub_part_id);
+                                    $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
+                                    if( !array_key_exists( $sub_part_id, $items ) ) {
+                                        $total_items++;
+                                        $items[$sub_part_id] = new stdClass();
+                                        $items[$sub_part_id]->item_name = $sub_part->name;
+                                        if(is_array($details)) {
+                                            foreach($details as $quantity)
+                                            {
+                                                $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
+                                            }
+                                        } else {
+                                            $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
+                                        }
+                                        $items[$sub_part_id]->barcode = $this->getBarcodeFromPart( $sub_part);
+                                        $items[$sub_part_id]->img = $sub_part_img;
+                                    }
+                                    else {
+                                        $items[$sub_part_id]->quantity += $details * $sub_part_quantity;
+                                    }
+                                }
+                            }    
                         }
-                        else
-                        {
-                            $items[$post_id]->quantity += $details;
-                        }
-                        $items[$post_id]->is_addon = $row->is_addon;
                         break;
 
                     case 'country':
+                        $key = "country-". $post_id;
                         foreach($details as $size => $quantity)
                         {
-                            if( !array_key_exists( $post_id, $items ) )
+                            if( !array_key_exists( $key, $items ) )
                             {
-                                $items[$post_id] = array();
+                                $items[$key] = array();
                             }
 
-                            if( !array_key_exists( $size, $items[$post_id] ) )
+                            if( !array_key_exists( $size, $items[$key] ) )
                             {
                                 $total_items++;
                                 $internal_id_code_key = "internal-id-code_" .$size;
@@ -428,61 +483,127 @@ class Warehouse
                                     }
                                 }
 
-                                $items[$post_id][$size] = new stdClass();
-                                $items[$post_id][$size]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
-                                $items[$post_id][$size]->quantity = $quantity;
-                                $items[$post_id][$size]->barcode = $internal_id_code;
-                                $items[$post_id][$size]->img = $this->getItemImage($post_id);
+                                $part = $inventree -> getInventreePartByIPN($internal_id_code);
+
+                                $items[$key][$size] = new stdClass();
+                                $items[$key][$size]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
+                                $items[$key][$size]->quantity = $quantity;
+                                $items[$key][$size]->barcode = $this->getBarcodeFromPart( $part);
+                                $items[$key][$size]->img = $this->getItemImage($post_id);
                             }
                             else
                             {
-                                $items[$post_id][$size]->quantity += $quantity;
+                                $items[$key][$size]->quantity += $quantity;
                             }
-                            $items[$post_id][$size]->is_addon = $row->is_addon;
                         }
                         break;
 
                     case 'collection':
-                        if(!is_array($details)) {
-                            $code = get_post_meta( $post_id, 'country-code', true);
-                            if( !array_key_exists( $post_id, $items ) )
-                            {
-                                $total_items++;
-                                $items[$post_id][$code] = new stdClass();
-                                $items[$post_id][$code]->item_name = get_the_title( $post_id );
-                                $items[$post_id][$code]->quantity = $details;
-                                $items[$post_id][$code]->barcode = get_post_meta( $post_id, 'internal-id-code', true);
-                                $items[$post_id][$code]->img = $this->getItemImage($post_id);
-                            }
-                            else
-                            {
-                                $items[$post_id][$code]->quantity += $details;
-                            }
-                            $items[$post_id][$code]->is_addon = $row->is_addon;
-                        } else {
-                            foreach($details as $size => $quantity)
-                            {
-                                if( !array_key_exists( $post_id, $items ) )
-                                {
-                                    $items[$post_id] = array();
+                        $internal_id_code = get_post_meta( $post_id, 'internal-id-code', true );
+                        $main_part = $inventree -> getInventreePartByIPN($internal_id_code);
+
+                        if($main_part != NULL) {
+                            if(!is_array($details)) {
+                                $code = get_post_meta( $post_id, 'country-code', true);
+
+                                $part_id = $main_part->pk;
+                                $boms = $inventree->getBOMByPartId($part_id);
+
+                                if(empty($boms)) {
+                                    if( !array_key_exists( $part_id, $items ) )
+                                    {
+                                        $total_items++;
+                                        $items[$part_id] = new stdClass();
+                                        $items[$part_id]->item_name = get_the_title( $post_id );
+                                        $items[$part_id]->quantity = $details;
+                                        $items[$part_id]->barcode =  $this->getBarcodeFromPart( $main_part);
+                                        $items[$part_id]->img = $this->getItemImage($post_id);
+                                        
+                                    }
+                                    else
+                                    {
+                                        $items[$part_id]->quantity += $details;
+                                    }    
+                                }
+                                else {
+                                    foreach($boms as $bom) {
+                                        $sub_part_id = $bom->sub_part;
+                                        $sub_part_quantity = $bom->quantity;
+                                        $sub_part = $inventree->getInventreePartById($sub_part_id);
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
+                                        if( !array_key_exists( $sub_part_id, $items ) ) {
+                                            $total_items++;
+                                            $items[$sub_part_id] = new stdClass();
+                                            $items[$sub_part_id]->item_name = $sub_part->name;
+                                            $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
+                                            $items[$sub_part_id]->barcode = $this->getBarcodeFromPart( $sub_part);
+                                            $items[$sub_part_id]->img = $sub_part_img;
+                                        }
+                                        else {
+                                            $items[$sub_part_id]->quantity += $details * $sub_part_quantity;
+                                        }
+                                    }
                                 }
 
-                                if( !array_key_exists( $size, $items[$post_id] ) )
-                                {
-                                    $total_items++;
-                                    $items[$post_id][$size] = new stdClass();
-                                    $items[$post_id][$size]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
-                                    $items[$post_id][$size]->quantity = $quantity;
-                                    $items[$post_id][$size]->barcode = get_post_meta( $post_id, 'internal-id-code', true);
-                                    $items[$post_id][$size]->img = $this->getItemImage($post_id);
-                                }
-                                else
-                                {
-                                    $items[$post_id][$size]->quantity += $quantity;
-                                }
-                                $items[$post_id][$size]->is_addon = $row->is_addon;
                             }
-                        }
+                            else {
+
+                                $part_id = $main_part->pk;
+                                $boms = $inventree->getBOMByPartId($part_id);
+                                if(empty($boms)) {
+                                    foreach($details as $size => $quantity)
+                                    {
+                                        if( !array_key_exists( $part_id, $items ) )
+                                        {
+                                            $items[$part_id] = array();
+                                        }
+        
+                                        if( !array_key_exists( $size, $items[$part_id] ) )
+                                        {
+                                            $total_items++;
+                                            $items[$part_id] = new stdClass();
+                                            $items[$part_id]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
+                                            $items[$part_id]->quantity = $quantity;
+                                            $items[$part_id]->barcode =$this->getBarcodeFromPart( $main_part);
+                                            $items[$part_id]->img = $this->getItemImage($post_id);
+                                        }
+                                        else
+                                        {
+                                            $items[$part_id]->quantity += $quantity;
+                                        }
+                                    }
+                                }else {
+                                    foreach($boms as $bom) {
+                                        $sub_part_id = $bom->sub_part;
+                                        $sub_part_quantity = $bom->quantity;
+                                        $sub_part = $inventree->getInventreePartById($sub_part_id);
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
+                                        
+                                        foreach($details as $size => $quantity){
+                                            if( !array_key_exists( $sub_part_id, $items ) )
+                                            {
+                                                $items[$sub_part_id] = array();
+                                            }
+            
+                                            if( !array_key_exists( $size, $items[$sub_part_id] ) )
+                                            {
+                                                $total_items++;
+                                                $items[$sub_part_id] = new stdClass();
+                                                $items[$sub_part_id]->item_name = $sub_part->name;
+                                                $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
+                                                $items[$sub_part_id]->barcode =$this->getBarcodeFromPart( $sub_part);
+                                                $items[$sub_part_id]->img = $sub_part_img;
+                                            }
+                                            else
+                                            {
+                                                $items[$sub_part_id]->quantity += $quantity * $sub_part_quantity;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            }   
+                        } 
                         break;
                 }
             }
@@ -559,6 +680,7 @@ class Warehouse
         $user_ids = [];
 
         $stmt = $this->dbh->prepare( "SELECT `user_id`, purchased, is_addon, hidden FROM " . self::$order_table . " WHERE in_main_table = 0 AND hidden = 0 AND status = 'processing' AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL" );
+
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_OBJ);
         $stmt = null;

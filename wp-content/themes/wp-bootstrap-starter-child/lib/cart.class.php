@@ -375,7 +375,7 @@ class Cart extends General
             $preorder_date = null;
         }
 
-        $sales_order_reference = '';//$this->_addSalesOrder($customer_id);
+        $sales_order_reference = $this->_addSalesOrder($customer_id);
 
         if( !$this->dbh->inTransaction() )
             $this->dbh->beginTransaction();
@@ -1283,15 +1283,11 @@ class Cart extends General
                     break;
             }
         }
-        
-        try {
-            SCKlaviyoHelper::getInstance()->addToList(
-                $_ENV['klaviyo_list_id'],
-                $email
-            );
-        } catch (Exception $e) {
 
-        }
+        SCKlaviyoHelper::getInstance()->addToList(
+            $_ENV['klaviyo_list_id'],
+            $email
+        );
     }
 
     public static function checkCartItemsStock()

@@ -7,6 +7,11 @@ global $hide_footer;
 $is_redesign_page = true;
 $hide_footer = true;
 
+if(isset($_GET['logout'])){
+    unset($_COOKIE['warehouse_id']);
+    unset($_GET['logout']);
+}
+
 $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
 
 $template_path = get_stylesheet_directory_uri();
@@ -58,7 +63,7 @@ get_header();
         <div class="container">
             <div class="warehouse__page" data-page="main">
                 <div class="warehouse__title">
-                    <h1>Welcome, <?= $user->display_name ?>!</h1>
+                    <h1>Welcome, <?= $user->first_name ?: $user->display_name ?>!</h1>
                 </div>
                 <div class="warehouse__btns">
                     <button type="button" class="btn" data-page-link="pick">POWER PICK</button>
@@ -151,6 +156,19 @@ get_header();
                     <span>CONFIRM Quantity</span>
                 </div>
                 <div class="warehouse__quantity warehouse__quantity--red js-pick-quantity">
+                
+                </div>
+                <div class="auth__btn">
+                    <button type="button" class="btn" data-fancybox-close>Confirm</button>
+                </div>
+            </div>
+        </div>
+        <div class="popup popup--small popup--no-close" id="warehouse-pick-customization">
+            <div class="popup__inner">
+                <div class="auth__title title-h1 small">
+                    <span>CONFIRM Customization</span>
+                </div>
+                <div class="warehouse__warning js-pick-customization">
                 
                 </div>
                 <div class="auth__btn">

@@ -68,26 +68,34 @@ class WarehouseAjax extends SCAjax
             wp_send_json_success(array('redirect_url' => '/ops'));
         }
     }
+
+    private static function validateWarehouseUserAccess() {
+        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
+        if (!$user) {
+            return wp_send_json_error(['error' => 'not_logged_in'], 300);
+        }
+        if (!in_array('warehouse', $user->roles) && !in_array('administrator', $user->roles)) {
+            return wp_send_json_error(['error' => 'not_allowed'], 300);
+        }
+        return true;
+    }
     
     
     // POWER PICK
     public static function getOrderFromQueue()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
     
         try {
             $warehouse = new Warehouse();
             $warehouse->adjustPickerNumber();
             $items = $warehouse->getNextOrder(false);
             $customer_info = $warehouse->getCustomerInformation();
+            
+            $items['items'][0]['item_name'] = 'Allergy Test - Scan Skittles Chewies';
+            $items['items'][0]['quantity'] = '1';
+            $items['items'][0]['barcode'] = '4009900538800';
+            $items['items'][0]['customization'] = 'Allergy: Strawberries | No coconut (receive muliple Coconut Free Snacks, and a few other randoms, to fulfill the crate for August)';
 
             $order = [
                 'id' => $items['ids'],
@@ -111,15 +119,7 @@ class WarehouseAjax extends SCAjax
 
     public static function returnOrderToQueue()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
 
         try {
             update_user_meta(intval($_COOKIE['warehouse_id']), 'active_order', []);
@@ -136,15 +136,7 @@ class WarehouseAjax extends SCAjax
     }
 
     public static function orderSessionExpired() {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
 
         try {
             update_user_meta(intval($_COOKIE['warehouse_id']), 'active_order', []);
@@ -161,20 +153,12 @@ class WarehouseAjax extends SCAjax
 
     public static function getOrdersInQueue()
     {
-       $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-       if (!$user) {
-           wp_send_json_error(['error' => 'not_logged_in'], 300);
-           return;
-       }
-       if (!in_array('warehouse', $user->roles)) {
-           wp_send_json_error(['error' => 'not_allowed'], 300);
-           return;
-       }
+        if (!self::validateWarehouseUserAccess()) return;
         
         try {
             $warehouse = new Warehouse();
             $orders_left = $warehouse->getOrderCount();
-            wp_send_json_success(['count' => $orders_left]);
+            wp_send_json_success(['count' => 1]);
         }
         catch(Exception $e)
         {
@@ -185,15 +169,8 @@ class WarehouseAjax extends SCAjax
 
     public static function sendPrintRequest()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
+
         $order_id = $_POST['order_id'];
         $printer_barcode = $_POST['printer_barcode'];
       
@@ -202,15 +179,8 @@ class WarehouseAjax extends SCAjax
 
     public static function completeOrder()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
+
         $order_id = $_POST['order_id'];
         
         wp_send_json_success();
@@ -220,15 +190,8 @@ class WarehouseAjax extends SCAjax
     // POWER PACK
     public static function getPackingList()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
+
         $packing_barcode = $_POST['packing_barcode'];
     
         
@@ -247,8 +210,8 @@ class WarehouseAjax extends SCAjax
         
         
         // If everything is good
-//        update_user_meta(intval($_COOKIE['warehouse_id']), 'active_pack_order', $order);
-//        wp_send_json_success($order);
+        update_user_meta(intval($_COOKIE['warehouse_id']), 'active_pack_order', $order);
+        wp_send_json_success($order);
         
         // If there was an error:
         wp_send_json_error([
@@ -264,7 +227,7 @@ class WarehouseAjax extends SCAjax
             wp_send_json_error(['error' => 'not_logged_in'], 300);
             return;
         }
-        if (!in_array('warehouse', $user->roles)) {
+        if (!in_array('warehouse', $user->roles) && !in_array('administrator', $user->roles)) {
             wp_send_json_error(['error' => 'not_allowed'], 300);
             return;
         }
@@ -275,15 +238,8 @@ class WarehouseAjax extends SCAjax
     
     public static function completePackOrder()
     {
-        $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
-        if (!$user) {
-            wp_send_json_error(['error' => 'not_logged_in'], 300);
-            return;
-        }
-        if (!in_array('warehouse', $user->roles)) {
-            wp_send_json_error(['error' => 'not_allowed'], 300);
-            return;
-        }
+        if (!self::validateWarehouseUserAccess()) return;
+        
         $order_id = $_POST['order_id'];
         
         update_user_meta(intval($_COOKIE['warehouse_id']), 'active_pack_order', []);
