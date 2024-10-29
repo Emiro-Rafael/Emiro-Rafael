@@ -1,0 +1,168 @@
+.countries-menu-modal {
+    .modal-dialog {
+        @extend .border-0;
+        @extend .m-0;
+        width: 100vw;
+
+        @include media-breakpoint-up(sm) {
+            max-width: unset;
+        }
+
+        .modal-content {
+            @extend .border-0;
+            height: calc(100vh - 165px);
+            border-radius: unset;
+            // box-shadow: inset 0 0.25rem 0.5rem -0.25rem rgba(0, 0, 0, .20);
+
+            @include media-breakpoint-up(md) {
+                // box-shadow: inset 0 0.25rem 0.8rem -0.25rem rgba(0, 0, 0, .20);
+                height: unset;
+            }
+
+            &::before {
+                content: "";
+                height: 10px;
+                position: absolute;
+                top: 0;
+                width: 100%;
+                background-image: linear-gradient(0deg,transparent 0%,rgba(0, 0, 0, 0.15) 100%);
+                @include media-breakpoint-up(md) {
+                    height: 12px;
+                    background-image: linear-gradient(0deg,transparent 0%,rgba(0, 0, 0, 0.1) 100%);
+                }
+            }
+
+            .countries-menu {
+                display: none;
+                @include media-breakpoint-up(md) {
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    grid-gap: 1.25rem;
+                }
+
+                @include media-breakpoint-up(xl) {
+                    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+                }
+                .geography {
+                    @extend .d-flex;
+                    @extend .flex-column;
+                    @extend .justify-content-start;
+                    @extend .align-items-start;
+                    .country-link {
+                        @extend .font-weight-semibold;
+                        @extend .mb-2;
+                        color: var(--dark);
+                        transition: color .15s ease-in-out;
+
+                        &:last-of-type {
+                            @extend .mb-0;
+                        }
+
+                        &:hover,
+                        &:focus {
+                            text-decoration: none;
+                            color: var(--secondary) !important;
+                        }
+                    }
+                }
+            }
+
+
+            // mobile only
+            .modal-content-wrapper {
+                @extend .w-100;
+                margin: 0 auto;
+                @include media-breakpoint-up(sm) {
+                    max-width: 540px;
+                }
+
+                .countries-menu-mobile {
+                    list-style-type: none;
+                    transition: transform .5s ease, opacity .5s ease;
+
+                    .geography {
+                        @extend .mx-3;
+
+                        .btn {
+                            @extend .btn-link;
+                            @extend .btn-block;
+                            @extend .text-left; 
+                            @extend .w-100;
+                            @extend .mb-0;
+                            @extend .py-3;
+                            @extend .px-0;
+                            @extend .border-bottom;
+                            @extend .d-flex;
+                            @extend .align-items-center;
+                            @extend .justify-content-between;
+                            @extend .h4;
+                            @extend .font-weight-medium;
+                            border: none;
+                            border-radius: unset !important;
+                            transition: color .15s ease-in-out;
+                                    
+                            &:hover,
+                            &:focus {
+                                text-decoration: none;
+                                color: var(--secondary) !important;
+                            }
+                        }
+
+                        .sub-menu-mobile {
+                            @extend .position-absolute;
+                            @extend .py-3;
+                            @extend .pl-0;
+                            @extend .mx-3;
+                            @extend .border-top;
+                            @extend .border-bottom;
+                            list-style-type: none;
+                            width: calc(100% - 2rem);
+                            top: 0;
+                            left: -5000px;
+                            right: 0;
+                            opacity: 0;
+                            transition: opacity .3s ease-out,left .6s step-end;
+
+                            .menu-back {
+                                @extend .h2;
+                                @extend .mb-3;
+                                
+                                a {
+                                    @extend .text-secondary;
+                                }
+                            }
+
+                            .country-link {
+                                @extend .mb-3;
+
+                                &:last-of-type {
+                                    @extend .mb-0;
+                                }
+
+                                a {
+                                    @extend .text-gray-dark;
+                                    @extend .font-weight-semibold;
+                                    transition: color .15s ease-in-out;
+
+                                    &:hover,
+                                    &:focus {
+                                        text-decoration: none;
+                                        color: var(--secondary) !important;
+                                    }
+                                }
+                            }
+                        }
+        
+                        .show-menu {
+                            height: auto;
+                            left: 100vw;
+                            opacity: 1;
+                            transition: opacity .5s ease-in-out;
+                        }
+                    }
+                }
+            } // end mobile only
+
+        }
+    }
+}

@@ -1,0 +1,118 @@
+.thank-you {
+	@extend .d-flex;
+	@extend .flex-column;
+	@extend .justify-content-center;
+	@extend .position-relative;
+
+	height: 100vh;
+	min-height: 700px;
+
+	@include media-breakpoint-up(md) {
+		min-height: 800px;
+	}
+
+    @include media-breakpoint-up(xl) {
+		min-height: 1000px;
+	}
+
+    .candybar-logo {
+        max-width: 120px;
+
+        @include media-breakpoint-up(md) {
+            max-width: 160px;
+        }
+
+        @include media-breakpoint-up(xl) {
+            max-width: 190px;
+        }
+    }
+
+	// mobile background
+	.bg-mobile,
+	.bg-desktop {
+		bottom: 0;
+		overflow: hidden;
+
+		span:nth-of-type(1) {
+			background-size: cover;
+			background-repeat: no-repeat;
+            bottom: 1px;
+		}
+
+		span:nth-of-type(2) {
+			background-size: 100% 100%;
+			background-repeat: no-repeat;
+			bottom: 0;
+		}
+	}
+
+	.bg-mobile {
+		height: 111%;
+
+		@include media-breakpoint-up(sm) {
+			height: 113%;
+		}
+
+		span:nth-of-type(1) {
+			background-image: url("../assets/images/thankyou-mobile-min.png");
+			background-position: center top 65%;
+			bottom: 0;
+			left: -15%;
+			width: 140%;
+		}
+
+		span:nth-of-type(2) {
+			background-image: url("../assets/images/thankyou-frame-mobile.png");
+			background-position: center bottom;
+		}
+
+		span:nth-of-type(3) {
+			background: linear-gradient(transparent 50%, #fff);
+			bottom: 0;
+			background-position: center bottom;
+		}
+	}
+	// desktop background
+	.bg-desktop {
+		height: 112%;
+
+		span:nth-of-type(1) {
+			background-image: url("../assets/images/thankyou-desktop-min.png");
+			background-position: center;
+		}
+
+		span:nth-of-type(2) {
+			background-image: url("../assets/images/thankyou-frame-desktop.png");
+			background-position: center;
+		}
+	}
+
+	.container {
+		z-index: 1;
+		max-width: 600px;
+		height: 100%;
+
+		a {
+			text-decoration: underline;
+			transition: text-decoration .2s ease;
+		}
+
+		a:hover,
+		a:focus {
+			text-decoration: none;
+		}
+
+		.social-links {
+			margin-bottom: 125px;
+
+			a {
+				transition: opacity .2s ease;
+			}
+
+			a:hover,
+			a:focus {
+				opacity: .5;
+			}
+		}
+	}
+}

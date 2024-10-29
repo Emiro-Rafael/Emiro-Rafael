@@ -1,0 +1,136 @@
+/** Search form */
+.search-form {
+	@extend .form-inline;
+}
+
+.search-form label {
+	@extend .form-group;
+
+	font-weight: normal;
+}
+
+.search-form .search-field {
+	@extend .form-control;
+}
+
+.search-form .search-submit {
+	@extend .btn;
+	@extend .btn-secondary;
+}
+
+
+/* Custom Styles */
+
+input::placeholder {
+	color: lightgrey;
+}
+
+/* Input Appended Button
+ * Generally a label
+ */
+.input-btn-right {
+	border-radius: 0 .25rem .25rem 0;
+	color: lightgrey;
+	cursor: pointer;
+}
+
+/* Seamless Form */
+.seamless-form {
+	.seamless-top {
+		border-radius: 0;
+	}
+
+	.seamless-divider {
+		height: 1px;
+		background: lightgrey;
+		border: solid white;
+		border-width: 0 .75rem 0 .75rem;
+	}
+
+	.seamless-bottom {
+		border-radius: 0 0 .25rem .25rem;
+
+		&.appended {
+			border-radius: 0 0 0 .25rem;
+		}
+	}
+
+	.seamless-bottom-appendage {
+		border-radius: 0 0 .25rem;
+	}
+}
+
+
+// Remove controls from input[type=number]
+input[type=number].no-controls {
+	-moz-appearance: textfield;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+}
+
+
+// Credit card # input w/ card icon
+.cc-number {
+	// background-image: url(../images/card/cc.svg);
+	background-repeat: no-repeat;
+	background-position: .75rem 50%;
+	background-size: 1.25rem;
+	text-indent: 1.75rem;
+	// 
+	transition: background-position .3s, text-indent .3s;
+
+	&:focus {
+		background-position-x: -20%;
+		text-indent: 0;
+	}
+
+	@include media-breakpoint-up(sm) {
+		background-size: initial;
+		background-position-x: 1rem;
+		text-indent: 2.5rem;
+	}
+}
+
+
+/* Responsive extension of .form-control-lg */
+
+/* Small */
+.form-control-lg-sm,
+.form-control-lg-md {
+	display: block;
+	width: 100%;
+	height: calc(1.5em + .75rem + 2px);
+	padding: .375rem .75rem;
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.5;
+	color: #495057;
+	background-color: #FFF;
+	border: 1px solid #CED4DA;
+	border-radius: .25rem;
+}
+
+@include media-breakpoint-up(sm) {
+	.form-control-lg-sm {
+		height: calc(1.5em + 1rem + 2px);
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+		line-height: 1.5;
+		border-radius: .3rem;
+	}
+}
+
+/* Medium */
+@include media-breakpoint-up(md) {
+	.form-control-lg-md {
+		height: calc(1.5em + 1rem + 2px);
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+		line-height: 1.5;
+		border-radius: .3rem;
+	}
+}

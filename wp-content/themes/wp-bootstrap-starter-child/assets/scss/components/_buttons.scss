@@ -1,0 +1,90 @@
+.btn {
+	border-width: .125rem;
+	font-weight: 600;
+
+	@extend .rounded-sm;
+
+	@include media-breakpoint-up(md) {
+		border-width: .1875rem;
+	}
+
+	&:disabled {
+		pointer-events: none;
+
+		&.active {
+			@each $name, $color in $theme-colors {
+				&.btn-outline-#{$name} {
+					background-color: $color;
+
+					@extend .text-white;
+				}
+			}
+		}
+	}
+}
+
+//back to top button
+.back-to-top {
+	position: fixed;
+	bottom: 85px;
+	right: 25px;
+	display: none;
+
+	@include media-breakpoint-up(md) {
+		bottom: 25px;
+	}
+}
+
+
+/* Small */
+@include media-breakpoint-up(sm) {
+	.btn-lg-sm {
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+		line-height: 1.5;
+		border-radius: .3rem;
+	}
+
+	.btn-sm-sm {
+		padding: .25rem .5rem;
+		font-size: .875rem;
+		line-height: 1.5;
+		border-radius: .2rem;
+	}
+}
+
+
+/* Medium */
+@include media-breakpoint-up(md) {
+	.btn-lg-md {
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+		line-height: 1.5;
+		border-radius: .3rem;
+	}
+
+	.btn-sm-md {
+		padding: .25rem .5rem;
+		font-size: .875rem;
+		line-height: 1.5;
+		border-radius: .2rem;
+	}
+}
+
+
+/* Large */
+@include media-breakpoint-up(lg) {
+	.btn-lg-lg {
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+		line-height: 1.5;
+		border-radius: .3rem;
+	}
+
+	.btn-sm-lg {
+		padding: .25rem .5rem;
+		font-size: .875rem;
+		line-height: 1.5;
+		border-radius: .2rem;
+	}
+}

@@ -1,0 +1,28 @@
+/** Import Bootstrap functions */
+@import "node_modules/bootstrap/scss/functions";
+
+$theme-colors: (
+	primary: #525DDC
+);
+
+/** Bootstrap navbar fix (https://git.io/fADqW) */
+$navbar-dark-toggler-icon-bg: none;
+$navbar-light-toggler-icon-bg: none;
+
+
+// Variables should follow the `$component-state-property-size` formula for
+// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+
+// Color System
+
+$primary: #00A7CE;
+$secondary: #FF9E16;
+$info: #EF6F6C;
+$success: #00B207;
+$dark: #2D3047;
+$gray-dark: #646464;
+$gray: #989898;
+$gray-light: #F4F4F4;
+$gold: #FCC202;
+$white: #fff;

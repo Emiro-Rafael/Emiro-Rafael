@@ -1,0 +1,66 @@
+.checkout-address {
+    .container {
+
+        .form-container {
+            max-width: 400px;
+            .sr-only {
+                position:absolute;
+                left:-10000px;
+                top:auto;
+                width:1px;
+                height:1px;
+                overflow:hidden;
+            }
+            label {
+                @extend .h7;
+                @extend .h6-md;
+                @extend .mb-1;
+                @extend .text-gray;
+                @extend .font-weight-medium;
+            }
+
+            input[type="text"],
+            select {
+                @extend .h7;
+                @extend .h6-md;
+                @extend .text-dark;
+                @extend .font-weight-medium;
+                @extend .border-0;
+                @extend .p-2;
+                @extend .p-md-3;
+                @extend .mb-2;
+                @extend .mb-md-3;
+                @extend .w-100;
+
+                box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+                border-radius: .25rem;
+
+                @include media-breakpoint-up(md) {
+                    border-radius: .4375rem;
+                }
+
+            }
+
+            select {
+                padding-left: .25rem !important;
+                @include media-breakpoint-up(md) {
+                    padding-left: .75rem !important;
+                }
+            }
+
+            select:required:invalid {
+                color: #d3d3d3 !important;
+            }
+
+            .guest-submit {
+                .btn {
+                    height: 37px;
+                    @include media-breakpoint-up(md) {
+                        height: 56px;
+                        border-radius: .4375rem !important;
+                    }
+                }
+            }
+        }
+    }
+}

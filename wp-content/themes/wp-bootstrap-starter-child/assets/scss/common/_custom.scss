@@ -1,0 +1,107 @@
+// These variables override the default Bootstrap settings
+
+/* Breakpoints */
+
+$grid-breakpoints: (
+	xs: 0,
+	sm: 576px,
+	md: 768px,
+	lg: 992px,
+	xl: 1200px,
+	xxl: 1400px
+);
+
+$container-max-widths: (
+	sm: 540px,
+	md: 720px,
+	lg: 960px,
+	xl: 1140px,
+	xxl: 1370px
+);
+
+
+/* Typography */
+
+// Font Family
+$font-family-sans-serif: "Ridley Grotesk", sans-serif;
+
+// Font Weight
+$font-weight-lighter:	200;
+$font-weight-light:		300;
+$font-weight-normal:	400;
+$font-weight-bold:		700;
+$font-weight-bolder:	800;
+// Additions
+$font-weight-thin:		100;
+$font-weight-medium:	500;
+$font-weight-semibold:	600;
+$font-weight-black:		900;
+
+$font-weights: (
+	"thin": 	$font-weight-thin,
+	"lighter": 	$font-weight-lighter,
+	"light": 	$font-weight-light,
+	"normal": 	$font-weight-normal,
+	"medium": 	$font-weight-medium,
+	"semibold":	$font-weight-semibold,
+	"bold":		$font-weight-bold,
+	"bolder": 	$font-weight-bolder,
+	"black": 	$font-weight-black,
+);
+
+@each $size, $value in $font-weights {
+	.font-weight-#{$size} {
+		font-weight: $value !important;
+	}
+}
+
+
+/* Color System */
+
+// Palette
+$theme-colors: (
+	"primary": $primary,
+	"secondary": $secondary,
+	"success": $success,
+	"info": $info,
+	"dark": $dark,
+	"gray": $gray,
+	"gray-light": $gray-light,
+	"gray-dark": $gray-dark,
+	"white": $white
+);
+$body-color: $dark;
+
+$body-color: #2D3047;
+
+// Gradients
+$degrees: (
+	0: 0deg,
+	90: 90deg,
+	135: 135deg,
+	270: 270deg,
+);
+
+@each $name, $color in $theme-colors {
+	@each $degree, $degree-val in $degrees {
+		.bg-gradient-#{$name}-#{$degree} {
+			$gradient-start: lighten($color, 2%);
+			$gradient-end: lighten($color, 8%);
+
+			background: linear-gradient($degree-val, $gradient-start, $gradient-end);
+		}
+	}
+}
+
+
+// Components
+
+.btn-lg,
+.btn-group-lg > .btn {
+	padding: .75rem 1.75rem !important;
+}
+
+.noscroll {
+	height: 100vh;
+	overflow: hidden;
+}

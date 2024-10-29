@@ -1,0 +1,46 @@
+.drink-upgrade-modal {
+    .modal-dialog {
+        max-width: 652px;
+        .modal-content {
+            border-radius: 8px;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,.25));
+            .modal-body {
+                .vid-container {
+                    video {
+                        border-radius: 8px;
+                        max-width: 483px;
+                    }
+                }
+
+                .upgrade-info {
+                    .upgrade-title,
+                    p {
+                        max-width: 400px;
+                    }
+                }
+            }
+
+            .modal-footer {
+                .btn {
+                    filter: drop-shadow(3px 3px 4px rgba(0,0,0,.10));
+                    @include media-breakpoint-up(md) {
+                        max-width: 277px;
+                    }
+                }
+
+                p {
+                    @include media-breakpoint-up(md) {
+                        max-width: 435px;
+                    }
+                }
+
+                a {
+                    text-decoration: underline;
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+            }
+        }
+    }
+}

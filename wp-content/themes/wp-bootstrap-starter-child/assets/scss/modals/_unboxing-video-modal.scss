@@ -1,0 +1,41 @@
+.unboxing-hero-vid {
+    .modal-dialog {
+        max-width: none;
+
+        .modal-content {
+            pointer-events: auto;
+            background-color: transparent;
+            background-clip: padding-box;
+            outline: 0;
+            border: none;
+            max-width: 1400px;
+
+            .closeHeroVideo {
+                right: 13px;
+                top: -12px;
+                font-size: 3rem;
+                color: #ffffff;
+                background-color: transparent;
+                border: none;
+                outline: none;
+            
+                &:hover {
+                    color: $primary;
+                }
+            }
+
+            .hero-vid-container {
+                overflow: hidden;
+                height: 80vh;
+        
+                .responsive-iframe {
+                    top: 0;
+                    left: 0;
+                    bottom: 0;
+                    right: 0;
+                    border: none;
+                }
+            }
+        }
+    }
+}

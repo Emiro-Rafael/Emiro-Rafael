@@ -1,0 +1,29 @@
+.view-snack-specs-modal {
+    .modal-content {
+        @include media-breakpoint-up(md) {
+            margin-top: 6rem !important;
+        }
+
+        @include media-breakpoint-up(lg) {
+            margin-top: 3.5rem !important;
+        }
+
+        @include media-breakpoint-up(xxl) {
+            margin-top: 5rem !important;
+        }
+
+        .modal-body{
+            .img-fluid {
+                max-height: 500px;
+    
+                @include media-breakpoint-up(md) {
+                    max-height: 600px;
+                }
+    
+                @include media-breakpoint-up(lg) {
+                    max-height: 700px;
+                }
+            }
+        }
+    }
+}

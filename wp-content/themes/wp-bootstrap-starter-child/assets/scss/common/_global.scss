@@ -1,0 +1,326 @@
+html {
+    scroll-behavior: smooth;
+}
+
+// .site-content padding for header height
+.site-content {
+	padding-top: 131px;
+    transition: all .3s ease;
+
+	@include media-breakpoint-up(lg) {
+		padding-top: 67px;
+	}
+
+    @include media-breakpoint-up(xxl) {
+		padding-top: 80px;
+	}
+}
+
+// Change cursor while page loading
+.loading * {
+	cursor: wait;
+}
+
+// Trigger loading animation along /w AJAX requests
+.ajax-overlay {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity .3s ease-out;
+}
+
+.loading-ajax {
+	.ajax-overlay {
+		cursor: wait;
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+
+// apple button styles
+.appleid-signin {
+    @extend .text-white;
+    @extend .h7;
+    @extend .h6-md;
+    background-color: black;
+    height: 37px;
+    @include media-breakpoint-up(md) {
+        height: 56px;
+        border-radius: .4375rem !important;
+    }
+}
+
+.noscroll {
+	height: 100vh;
+	overflow: hidden;
+}
+
+/* Layout */
+
+.single-column {
+	width: 100%;
+	max-width: 28rem;
+}
+
+
+/* Components */
+
+
+// Anchor
+
+a {
+	cursor: pointer;
+}
+
+
+// Backgrounds
+
+.bg-pos-center {
+	background-position: center center;
+}
+
+.bg-no-repeat {
+	background-repeat: no-repeat;
+}
+
+.overlay {
+	background-color: rgba(0, 0, 0, .7) !important;
+
+	// Hide for safari
+	@media not all and (min-resolution: .001dpcm) {
+		@supports (-webkit-appearance:none) {
+			background-color: transparent;
+		}
+	}
+}
+
+
+// Shadow
+.shadow-sm {
+	box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .1) !important;
+}
+
+.shadow-light-sm {
+	box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .05) !important;
+}
+
+.shadow {
+	box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .1) !important;
+}
+
+.shadow-light {
+	box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .05) !important;
+}
+
+.shadow-lg {
+	box-shadow: 0 1rem 3rem rgba(0, 0, 0, .1) !important;
+}
+
+.shadow-light-lg {
+	box-shadow: 0 1rem 3rem rgba(0, 0, 0, .05) !important;
+}
+
+
+// Text Shadow
+.text-shadow-sm {
+	text-shadow: 0 .125rem .25rem rgba($color: #000, $alpha: .1);
+}
+
+.text-shadow-light-sm {
+	text-shadow: 0 .125rem .25rem rgba($color: #000, $alpha: .05);
+}
+
+.text-shadow {
+	text-shadow: 0 .5rem 1rem rgba($color: #000, $alpha: .1);
+}
+
+.text-shadow-light {
+	text-shadow: 0 .5rem 1rem rgba($color: #000, $alpha: .05);
+}
+
+.text-shadow-lg {
+	text-shadow: 0 1rem 3rem rgba($color: #000, $alpha: .1);
+}
+
+.text-shadow-light-lg {
+	text-shadow: 0 1rem 3rem rgba($color: #000, $alpha: .05);
+}
+
+
+// SVG Shadow
+.svg-shadow-sm {
+	filter: drop-shadow(0 .125rem .25rem rgba(0, 0, 0, .1));
+}
+
+.svg-shadow-light-sm {
+	filter: drop-shadow(0 .125rem .25rem rgba(0, 0, 0, .05));
+}
+
+.svg-shadow {
+	filter: drop-shadow(0 .5rem 1rem rgba(0, 0, 0, .1));
+}
+
+.svg-shadow-light {
+	filter: drop-shadow(0 .5rem 1rem rgba(0, 0, 0, .05));
+}
+
+.svg-shadow-lg {
+	filter: drop-shadow(0 1rem 3rem rgba(0, 0, 0, .1));
+}
+
+.svg-shadow-light-lg {
+	filter: drop-shadow(0 1rem 3rem rgba(0, 0, 0, .05));
+}
+
+.svg-shadow-dark {
+	filter: drop-shadow(0 .25rem .25rem rgba(0, 0, 0, .25));
+}
+
+// Opacity -- NOTE: Replace with a SASS map
+.opacity-0 {
+	opacity: 0 !important;
+}
+
+// extend position classes for responsiveness
+@each $breakpoint in map-keys($grid-breakpoints) {
+	@include media-breakpoint-up($breakpoint) {
+		$infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+		// Common values
+		@each $position in $positions {
+			.position#{$infix}-#{$position} { position: $position !important; }
+		}
+	}
+}
+
+.absolute-fill {
+	@extend .position-absolute;
+
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.hidden {
+	position: absolute;
+	left: -999px;
+	top: -999px;
+}
+
+// remove bootstrap shadow from modals
+.modal.show .modal-dialog {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+}
+
+.styled-check {
+    input,
+    label {
+        @extend .mb-0;
+        text-transform: none !important;
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    input[type="checkbox"] {
+        opacity: 0;
+    }
+    label::before {
+        content: "";
+        display: inline-block;
+        
+        height: 17px;
+        width: 17px;
+        
+        border: 2px solid #ff9e16; 
+        border-radius: 2px;
+        top: 2px;
+        left: -22px;
+        @include media-breakpoint-up(lg) {
+            top: 3px;
+        }
+    }
+
+    label::after {
+        content: "";
+        display: inline-block;
+        height: 6px;
+        width: 11px;
+        border-left: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        transform: rotate(-45deg);
+        left: -19px;
+        top: 6px;
+        @include media-breakpoint-up(lg) {
+            top: 7px;
+        }
+    }
+
+    label::before,
+    label::after {
+        position: absolute;
+    }
+
+    /*Hide the checkmark by default*/
+    input[type="checkbox"] + label::after {
+        content: none;
+    }
+    /*Unhide the checkmark on the checked state*/
+    input[type="checkbox"]:checked + label::after {
+        content: "";
+    }
+
+    input[type="checkbox"]:checked + label::before {
+        background-color: var(--secondary);
+    }
+
+    /*Adding focus styles on the outer-box of the fake checkbox*/
+    input[type="checkbox"]:focus + label::before {
+        box-shadow: 0 0 0 0.2rem rgba(0, 167, 206, .5);
+    }
+}
+
+// input and select placeholder text color
+input[type="text"]::placeholder,
+textarea::placeholder, 
+input[type="text"]::-webkit-placeholder,
+textarea::-webkit-placeholder, 
+input[type="text"]::-moz-placeholder,
+textarea::-moz-placeholder {
+    color: lightgray !important;
+}
+
+.order-summary {
+    @include media-breakpoint-up(md) {
+        //width: 50%;
+    }
+    .single-cart-item {
+        .cart-item-img {
+            max-width: 40px;
+            @include media-breakpoint-up(md) {
+                max-width: 60px;
+            }
+            @include media-breakpoint-up(lg) {
+                max-width: 80px;
+            }
+        }
+    }
+
+    .edit-address-btn {
+        -webkit-appearance: none;
+        text-decoration: underline;
+        &:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+    }
+}
+
+body {
+    overflow-x: hidden;
+}
+
+[type='submit'] {
+    pointer-events: none;
+    opacity: 0.5;
+}

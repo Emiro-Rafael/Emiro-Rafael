@@ -1,0 +1,195 @@
+.single-snack {
+
+    .single-snack-container {
+        .breadcrumb {
+
+            .fa-chevron-right {
+                font-size: .5rem;
+            }
+
+            .breadcrumb-item {
+                @extend .h8;
+                @extend .h7-md;
+            }
+
+            .breadcrumb-item+.breadcrumb-item:before {
+                content: "";
+            }
+        }
+
+        .single-snack-content {
+            .snack-country {
+                .flag-img {
+                    width: 35px;
+                    @include media-breakpoint-up(md) {
+                        width: 50px;
+                    }
+                    @include media-breakpoint-up(xl) {
+                        width: 60px;
+                    }
+                }
+            }
+            .snack-img {
+                max-width: 482px;
+                @include media-breakpoint-up(md) {
+                    flex: 40%;
+                }
+
+                @include media-breakpoint-up(xxl) {
+                    flex: 55%;
+                }
+
+                .img-fluid {
+                    max-width: 300px;
+                    @include media-breakpoint-up(md) {
+                        max-width: 100%;
+                    }
+                }
+            }
+
+            .snack-info {
+                @include media-breakpoint-up(md) {
+                    flex: 60%;
+                }
+
+                @include media-breakpoint-up(xxl) {
+                    flex: 45%;
+                }
+
+                .specs-link {
+                    text-decoration: underline;
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+
+                .review-stars {
+                    -webkit-appearance: none;
+                    width: 5em;
+                    @extend .text-right;
+                    @extend .text-md-left;
+
+                    @include media-breakpoint-up(md) {
+                        width: unset;
+                    }
+
+                    .icon-star {
+                        margin: 0 -2px;
+                        width: 1.25rem;
+                        height: 1.25rem;
+        
+                        @include media-breakpoint-up(lg) {
+                            width: 1.5rem;
+                            height: 1.5rem;
+                        }
+        
+                        @include media-breakpoint-up(xl) {
+                            width: 2rem;
+                            height: 2rem;
+                            margin: 0 -3px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .add-to-cart {
+            .discount-info {
+                a {
+                    text-decoration: underline;
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+            }
+            .add-to-crate {
+                input,
+                label {
+                    &:hover {
+                        cursor: pointer;
+                    }
+                }
+
+                input[type="checkbox"] {
+                    opacity: 0;
+                }
+                label::before {
+                    content: "";
+                    display: inline-block;
+                    
+                    height: 17px;
+                    width: 17px;
+                    
+                    border: 2px solid #00A7CE; 
+                    border-radius: 2px;
+                    top: 0;
+                    left: -25px;
+                    @include media-breakpoint-up(lg) {
+                        top: 3px;
+                    }
+                }
+
+                label::after {
+                    content: "";
+                    display: inline-block;
+                    height: 6px;
+                    width: 9px;
+                    border-left: 2px solid #00A7CE;
+                    border-bottom: 2px solid #00A7CE;
+                    transform: rotate(-45deg);
+                    left: -21px;
+                    top: 4px;
+                    @include media-breakpoint-up(lg) {
+                        top: 7px;
+                    }
+                }
+
+                label::before,
+                label::after {
+                    position: absolute;
+                }
+
+                /*Hide the checkmark by default*/
+                input[type="checkbox"] + label::after {
+                    content: none;
+                }
+                /*Unhide the checkmark on the checked state*/
+                input[type="checkbox"]:checked + label::after {
+                    content: "";
+                }
+
+                /*Adding focus styles on the outer-box of the fake checkbox*/
+                input[type="checkbox"]:focus + label::before {
+                    box-shadow: 0 0 0 0.2rem rgba(0, 167, 206, .5);
+                }
+            }
+
+            .ajax_form {
+                label {
+                    @extend .bg-white;
+                    @extend .text-gray-dark;
+                }
+
+                select {
+                    @extend .bg-white;
+                    background-image: url(../assets/images/chevron-down-icon-black.svg);
+                    background-position: 48px;
+                    background-repeat: no-repeat;
+                    background-size: 25%;
+
+                    @include media-breakpoint-up(md) {
+                        background-position: 56px;                    
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        background-position: 60px;
+                    }
+                }
+
+                button {
+                    @extend .btn-secondary;
+                }
+            }
+        }
+    }
+}

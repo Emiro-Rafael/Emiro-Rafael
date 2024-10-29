@@ -1,0 +1,102 @@
+.shopping-cart {
+
+    .cart-items-mobile {
+        .single-cart-item {
+            .container {
+                .cart-item-img {
+                    max-width: 60px;
+                }
+            }
+        }
+    }
+
+    .cart-items-desktop {
+        max-width: 1440px;
+        .cart-table {
+            .single-cart-item {
+                .cart-item-img {
+                    max-width: 70px;
+                    @include media-breakpoint-up(lg) {
+                        max-width: 100px;
+                    }
+    
+                    @include media-breakpoint-up(xl) {
+                        max-width: 130px;
+                    }
+                }
+            }
+        }
+    }
+
+    .total-cost {
+        .total-cost-container {
+            .cost-breakdown {
+                width: fit-content;
+            }
+        }
+    }
+
+    .checkout-btn-top {
+        .ajax_form {
+
+            .checkout-btn {
+                @extend .px-md-5;   
+            }
+        }
+    }
+
+    .checkout-btn-bottom {
+
+        .ajax_form {
+            @extend .w-100;
+
+            @include media-breakpoint-up(md) {
+                max-width: 360px;
+            }
+
+            @include media-breakpoint-up(lg) {
+                max-width: 400px;
+            }
+
+            .checkout-btn {
+                @extend .w-100;   
+            }
+        }
+    }
+
+    .checkout-btn {
+        &:disabled {
+            background-color: #bdbdbd !important;
+            border-color: #bdbdbd !important;
+        } 
+    }
+
+    // firefox input width bug fix
+    input[type=number] {
+        width: 4em;
+    }
+
+    // chrome input type number fix to make arrows visible always
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button {  
+        opacity: 1;
+    }
+
+    .signInBtn {
+        text-decoration: none;
+        border-bottom: 2px solid #00a7ce;
+
+        &:hover {
+            border-bottom: 2px solid #006982;
+            text-decoration: none;
+        }
+    }
+
+    .cartQty {
+        padding: .5rem !important;
+        border: 1px solid #646464 !important;
+        border-radius: .5rem !important;
+    }    
+
+
+}

@@ -1,0 +1,404 @@
+.shop-all {
+  .breadcrumb {
+
+    .fa-chevron-right {
+        font-size: .5rem;
+    }
+  
+    .breadcrumb-item {
+        @extend .h8;
+        @extend .h7-md;
+    }
+  
+    .breadcrumb-item+.breadcrumb-item:before {
+        content: "";
+    }
+  }
+  
+  .seeMoreBtn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #00A7CE;
+  
+    &:hover {
+      color: #FF9E16;
+    }
+  }
+  
+  .taxonomy_container {
+    &.linGradient {
+      position: relative;
+    }
+  
+    .term_container.linGradient::after {
+      content: "";
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) -153.31%, #FFFFFF 121.6%);
+      position: absolute;
+      bottom: 0;
+      left: -1rem;
+      right: 0;
+      height: 110%;
+      top: -.25rem;
+    }
+  }
+  
+  .shop-all--wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .filterBtn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+  
+    div {
+      margin-right: .5rem;
+    }
+  
+    svg {
+      width: auto;
+      height: 11px;
+      max-width: 20px;
+    }
+  }
+  
+  .shop-all--wrap .content-area {
+    width: 100%;
+  }
+  
+  // grid system and snack-block styles
+  .taxWrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 15px;
+  
+      @include media-breakpoint-up(sm) {
+          grid-template-columns: 1fr 1fr 1fr;
+      }
+  
+      @include media-breakpoint-up(xxl) {
+          grid-template-columns: 1fr 1fr 1fr 1fr;
+          grid-gap: 30px;
+      }
+  
+      .taxItem {
+        .snack-block-container {
+          &:hover {
+            text-decoration: none;
+            color: inherit;
+          }
+          .snack-block {
+            @extend .p-xl-3;
+            .flag-img {
+              @include media-breakpoint-up(lg) {
+                right: 12px;
+                top: 10px;
+                max-width: 48px;
+              }
+            }
+  
+            .snack-img {
+              @extend .mt-lg-4;
+              .img-fluid {
+                @include media-breakpoint-up(lg) {
+                  max-width: 166px;
+                }
+              }
+            }
+  
+            .snack-brand,
+            .snack-title {
+                @extend .text-dark;
+            }
+  
+            .prices {
+                @extend .text-gray;
+            }
+            .snack-brand {
+              @extend .h5-xl;
+            }
+  
+            .snack-title {
+              @extend .h4-xl;
+            }
+          }
+        }
+      }
+
+      .taxItem[style="display: none;"] {
+        .snack-block {
+          box-shadow: none;
+        }
+      }
+  }
+  
+  .page-template-page-shopall .taxWrap.items {
+    white-space: initial;
+  }
+  
+  
+  @media (min-width: 768px) {
+  
+    .shop-all--wrap {
+      flex-direction: row;
+  
+      .content-area {
+        width: 75%;
+      }
+    }
+  }
+  
+  @media (min-width: 1144px) {
+  
+    .shop-all--wrap .filter-wrap {
+      max-width: 340px;
+    }
+  }
+  
+  .horizontal-slider.active {
+    background: rgba(255, 255, 255, 0.2);
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+    transform: scale(1);
+  }
+  
+  .content-area {
+    width: 100%;
+  }
+  
+  
+  // .items {
+  //   width: 100%;
+  //   //overflow-x: scroll;
+  //   //overflow-y: hidden;
+  //   //white-space: nowrap;
+  //   user-select: none;
+  //   transition: all 0.2s;
+  //   transform: scale(1);
+  //   will-change: transform;
+  //   position: relative;
+  //   perspective: 500px;
+  //   transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  //   .item {
+  //     display: block;
+  //     width: 100%;
+  //     white-space: normal;
+  //     justify-content: center;
+  //   }
+  
+  //   &.active {
+  //     background: rgba(255, 255, 255, 0.2);
+  //     cursor: grabbing;
+  //     cursor: -webkit-grabbing;
+  
+  //     .item {
+  //       color: inherit;
+  //       pointer-events: none;
+  //       cursor: default;
+  //     }
+  //   }
+  // }
+  
+  // .item {
+  //   display: inline-flex;
+  // }
+  
+  .filter-wrap {
+    width: 100%;
+    max-width: 340px;
+    display: none;
+  
+      &.toggled {
+        display: block;
+      }
+    @include media-breakpoint-up(md) {
+      max-width: 250px;
+      display: block;
+    }
+
+    &::after {
+      content: "";
+      background: linear-gradient(rgba(255, 255, 255, .1), #fff 100%);
+      position: absolute;
+      right: 5px;
+      bottom: 0;
+      height: 15%;
+      width: 100%;
+      @extend .d-md-none;
+    }
+  }
+  
+  header {
+    height: 80px;
+  }
+  
+  .slider {
+    width: 100%;
+    margin: 0;
+  }
+  
+  /* Radio Button */
+  
+  // .tax_name {
+  //   margin-left: 2rem;
+  // }
+  
+  /* The container */
+  
+  .taxonomy_container {
+    display: block;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  
+    input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+  
+  /* Hide the browser's default radio button */
+  
+  /* Create a custom radio button */
+  
+  .term_container .checkmark {
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    background-color: #FFF;
+    border-radius: 50%;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.32);
+  }
+  
+  /* On mouse-over, add a grey background color */
+  
+  .taxonomy_container {
+    &:hover input ~ .checkmark, input:checked ~ .checkmark {
+      background-color: #FFF;
+    }
+  }
+  
+  /* When the radio button is checked, add a blue background */
+  
+  /* Create the indicator (the dot/circle - hidden when not checked) */
+  
+  .term_container .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  /* Show the indicator (dot/circle) when checked */
+  
+  .taxonomy_container {
+    input:checked ~ .checkmark:after {
+      display: block;
+    }
+  
+    .checkmark:after {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #00A7CE;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+  
+  /* Style the indicator (dot/circle) */
+  
+  .term_container {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  
+    label {
+      margin-left: 2rem;
+    }
+  }
+  
+  header {
+    background: #f7f7f7;
+  }
+  
+  
+  
+  .breadcrumbs {
+    margin-top: 1.1875rem;
+    font-size: 0.875rem;
+    color: #939393;
+  
+    a {
+      color: #939393;
+    }
+  }
+  
+  #search-filter .taxonomy_container {
+      margin-bottom: 3rem;
+      @include media-breakpoint-up(md) {
+        margin-bottom: 2rem;
+      }
+  }
+
+  #search-filter {
+    height: 20rem;
+    overflow-y: scroll;
+    @include media-breakpoint-up(md) {
+      height: unset;
+      overflow-y: unset;
+    }
+
+    /* Scrollbar Styling */
+    &::-webkit-scrollbar {
+      width: 5px;
+      display: unset;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: #ebebeb;
+      -webkit-border-radius: 10px;
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      -webkit-border-radius: 10px;
+      border-radius: 10px;
+      background: var(--secondary); 
+    }
+
+    .filter-category {
+      flex: 50%;
+    }
+  }
+  
+  .button-wrapper {
+    margin: auto;
+  }
+  
+  .button-test {
+    background: teal;
+    color: white;
+    display: inline-block;
+    margin: 15px;
+    padding: 20px;
+    font-family: arial;
+    border-radius: 5px;
+  }
+  
+  .button-test:hover {
+    cursor: pointer;
+  }
+}
+
+#search-filter .d-none {
+  display: none !important;
+}

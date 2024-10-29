@@ -1,0 +1,80 @@
+/*
+    Theme Name: WP Bootstrap Starter Child
+    Theme URI: https://afterimagedesigns.com/wp-bootstrap-starter/
+    Author: Afterimage Designs
+    Author URI: https://afterimagedesigns.com/
+    Description:  The best WordPress starter theme based on the most powerful frameworks in the world: "_s" (by Automattic, the main people behind WordPress development), Twitter Bootstrap (the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web) and Font Awesome (or Fontawesome, a full suite of 675+ pictographic icons for easy scalable vector graphics on websites). This theme, like WordPress, is licensed under the GPL. You can use this theme as base for your next WordPress theme project and you are allowed to remove the link at the footer or do whatever you want. Your feedback on how we can continuously improve this WordPress Starter Theme Bootstrap will be highly appreciated. Page templates includes Right-sidebar (default page template), Left-Sidebar, Full-Width, Blank with container, Blank without container Page. Other features - Currently using Bootstrap v4.0.0 , Widgetized footer area, WooCommerce ready, Compatible with Contact Form 7, Compatible with Visual Composer, Compatible with Elementor Page Builder. This theme will be an active project which we will update from time to time. Check this page regularly for the updates.
+    Template: wp-bootstrap-starter
+    Version: 3.3.6
+    License: GNU General Public License v2 or later
+    License URI: LICENSE
+    Text Domain: wp-bootstrap-starter-child
+    Requires at least: 4.7
+    Requires PHP: 5.2.4
+    Tested up to: 5.4
+    Tags: blog, custom-menu, featured-images, threaded-comments, translation-ready, right-sidebar, custom-background, e-commerce, theme-options, sticky-post, full-width-template
+*/
+
+// Import utilities
+@import "common/variables";
+
+// Import Bootstrap customizations
+@import "common/custom";
+
+// Import everything from autoload
+// @import "autoload/animate";
+@import "autoload/bootstrap";
+
+// Common
+@import "common/global";
+@import "common/typography";
+@import "common/borders";
+@import "common/animations";
+@import "common/fonts";
+
+// Components
+@import "components/buttons";
+@import "components/comments";
+@import "components/forms";
+@import "components/wp-classes";
+
+// Modals
+@import "modals/countries-menu";
+@import "modals/snack-rating-modal";
+@import "modals/edit-info-modals";
+@import "modals/view-snack-specs-modal";
+@import "modals/signin";
+@import "modals/unboxing-video-modal";
+@import "modals/snack-poll-modal";
+@import "modals/drink-upgrade-modal";
+
+// Partials
+@import "partials/foot";
+@import "partials/nav";
+@import "partials/snack-swiper";
+@import "partials/user-reviews-swiper";
+
+// Template Parts
+@import "template-parts/snack-block";
+@import "template-parts/add-to-cart";
+
+// Pages
+@import "pages/single-country";
+@import "pages/single-collection";
+@import "pages/home";
+@import "pages/shop-all";
+@import "pages/single-snack";
+@import "pages/added-to-cart";
+@import "pages/shopping-cart";
+//@import "pages/sign-in";
+@import "pages/checkout-guest";
+@import "pages/checkout-address";
+@import "pages/checkout-confirm-pay";
+@import "pages/checkout-confirm-shipping";
+@import "pages/checkout-create-account";
+@import "pages/checkout-thank-you";
+@import "pages/collections";
+@import "pages/legal-doc";
+@import "pages/404";
+@import "pages/unboxing";
+@import "pages/holiday-landing";

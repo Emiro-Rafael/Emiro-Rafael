@@ -1,0 +1,78 @@
+/* Extends .rounded classes */
+
+// Small
+.rounded-sm {
+	border-radius: .3125rem !important;
+}
+
+.rounded-top-sm,
+.rounded-left-sm {
+	border-top-left-radius: .3125rem !important;
+}
+
+.rounded-top-sm,
+.rounded-right-sm {
+	border-top-right-radius: .3125rem !important;
+}
+
+.rounded-bottom-sm,
+.rounded-left-sm {
+	border-bottom-left-radius: .3125rem !important;
+}
+
+.rounded-bottom-sm,
+.rounded-right-sm {
+	border-bottom-right-radius: .3125rem !important;
+}
+
+
+// Medium
+.rounded {
+	border-radius: .5rem !important;
+}
+
+.rounded-top,
+.rounded-left {
+	border-top-left-radius: .5rem !important;
+}
+
+.rounded-top,
+.rounded-right {
+	border-top-right-radius: .5rem !important;
+}
+
+.rounded-bottom,
+.rounded-left {
+	border-bottom-left-radius: .5rem !important;
+}
+
+.rounded-bottom,
+.rounded-right {
+	border-bottom-right-radius: .5rem !important;
+}
+
+
+// Large
+.rounded-lg {
+	border-radius: 1rem !important;
+}
+
+.rounded-top-lg,
+.rounded-left-lg {
+	border-top-left-radius: 1rem !important;
+}
+
+.rounded-top-lg,
+.rounded-right-lg {
+	border-top-right-radius: 1rem !important;
+}
+
+.rounded-bottom-lg,
+.rounded-left-lg {
+	border-bottom-left-radius: 1rem !important;
+}
+
+.rounded-bottom-lg,
+.rounded-right-lg {
+	border-bottom-right-radius: 1rem !important;
+}

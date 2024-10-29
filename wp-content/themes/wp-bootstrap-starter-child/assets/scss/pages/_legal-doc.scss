@@ -1,0 +1,8 @@
+.legal-doc {
+	p,
+    ul {
+		@extend .h7;
+        @extend .h6-lg;
+        @extend .text-dark;
+	}
+}

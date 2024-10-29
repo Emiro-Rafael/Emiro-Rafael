@@ -1,0 +1,796 @@
+.home {
+    
+    h2 {
+        @extend .font-weight-semibold;
+        @extend .h6;
+        @extend .h5-sm;
+        @extend .h4-md;
+        @extend .h1-xl;
+    }
+
+    .unboxing-wrapper {
+        .unboxing-hero {
+            // background-image: url('/wp-content/uploads/2023/11/Holiday_landing_mobile-scaled.webp');
+            background-size: cover;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            // height: 800px;
+
+            @include media-breakpoint-up(md) {
+
+                // background-image: url('/wp-content/uploads/2023/11/Holiday_landing_web-scaled.webp');
+                background-position: center;
+                height: 750px;
+            }
+
+            @include media-breakpoint-up(xl) {
+                height: 88vh;
+            }
+
+            .hero-content {
+                max-width: fit-content;
+                h1 {
+                    text-shadow: 2px 2px 7px rgba(0, 0, 0, .33);
+                    line-height: 1;
+
+                    @include media-breakpoint-up(lg) {
+                        text-shadow: 5px 5px 15px rgba(0, 0, 0, .33);
+                    }
+
+                    @include media-breakpoint-up(xxl) {
+                        font-size: 114px !important;
+                    }
+                }
+
+                h3 {
+                    text-shadow: 2px 2px 7px rgba(0, 0, 0, .5);
+
+                    @include media-breakpoint-up(lg) {
+                        text-shadow: 5px 5px 12px rgba(0, 0, 0, .33);
+                    }
+                }
+                
+                .btn {
+                    max-width: 175px;
+
+                    @include media-breakpoint-up(md) {
+                        max-width: 228px;
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        max-width: 250px;
+                    }
+
+                    @include media-breakpoint-up(xl) {
+                        max-width: 290px;
+                    }
+                }
+            }
+        }
+    }
+
+    .hero {
+        max-width: 1440px;
+        .hero-img-wrapper {
+            max-width: 685px;
+            width: 100%;
+            @include media-breakpoint-up(sm) {
+                width: 50%;
+            }
+        }
+
+        .hero-text {
+
+            @include media-breakpoint-up(sm) {
+                width: 50%;
+            }
+
+            @include media-breakpoint-up(xxl) {
+                margin: 5rem !important;
+                max-width: 570px;
+            }
+
+            h1 {
+                @extend .font-weight-semibold;
+                @extend .h6;
+                @extend .h5-sm;
+                @extend .h4-md;
+                @extend .h1-xl;
+                line-height: 1.5rem;
+
+                @include media-breakpoint-up(md) {
+                    line-height: 2.25rem;
+                }
+
+                @include media-breakpoint-up(xl) {
+                    line-height: 3rem;
+                }
+            }
+    
+            .btn {
+                max-width: 174px;
+                &:hover {
+                    background-color: var(--secondary);
+                    @extend .text-white;
+                }
+
+                @include media-breakpoint-up(md) {
+                    max-width: 228px;
+                }
+
+                @include media-breakpoint-up(lg) {
+                    max-width: 250px;
+                }
+    
+                @include media-breakpoint-up(xl) {
+                    max-width: 290px;
+                }
+            }
+        }    
+
+        .v-hero-text {
+            top: 0;
+            left: 0;
+            right: 0;
+
+            @include media-breakpoint-up(md) {
+                max-width: 45%;
+                left: unset;
+                bottom: 0;
+            }
+
+            p {
+                @include media-breakpoint-up(xl) {
+                    max-width: 540px;
+                }
+            }
+        }
+    } // end hero
+
+    .trending-brands {
+
+        .brand-icons {
+
+            .brands-row {
+                @extend .d-flex;
+                @extend .align-items-center; 
+                @extend .justify-content-between;
+                @extend .my-2;
+                @extend .w-100;
+
+                // &:first-of-type {
+                //     @include media-breakpoint-up(lg) {
+                //         margin-right: 2rem !important;
+                //     }
+                // }
+
+                .brand-btn { 
+                    @extend .d-flex;
+                    @extend .flex-column;
+                    @extend .align-items-center;
+                    @extend .justify-content-center;
+                    // @extend .py-2;
+                    // @extend .py-sm-3;
+                    width: calc(100% / 3);
+                    border-radius: .5rem;/*updated from .1875rem to match the radius on bootstrap rounded class*/
+                    max-width: 204px;
+                    height: auto; /*updated from 56px*/
+                    box-shadow: 0 0 .25rem rgba(0, 0, 0, .16);
+                    transition: box-shadow ease-in-out .15s;
+
+                    &:hover {
+                        box-shadow: 0 0 .75rem rgba(0, 0, 0, .5);
+                    }
+
+                    &:nth-of-type(2) {
+                        @include media-breakpoint-up(lg) {
+                            margin: 0 2rem !important;
+                        }
+
+                        @include media-breakpoint-up(xxl) {
+                            margin: 0 2.25rem !important;
+                        }
+                    }
+
+                    @include media-breakpoint-up(sm) {
+                        height: 120px;
+                    }
+
+                    @include media-breakpoint-up(md) {
+                        border-radius: .625rem;
+                        height: 102px;
+                        box-shadow: 0 0 .375rem rgba(0, 0, 0, .16);
+                        max-width: 406px; /*updated from unset*/
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        height: 128px;
+                    }
+
+                    @include media-breakpoint-up(xl) {
+                        height: 158px;
+                    }
+
+                    @include media-breakpoint-up(xxl) {
+                        height: 192px;
+                    }
+
+                    .brand-logo {
+                        max-height: 110%;
+
+                        @include media-breakpoint-up(md) {
+                            max-height: 125%;
+                        }
+                    }
+                }
+            }
+        }
+    } // end trending brands
+
+    // shop-now classes are for the featured countries and collections sections e.g. New Zealand, Kit Kat
+    .shop-now {
+        @extend .position-relative;
+
+        &.world-tour,
+        &.gummie-crate,
+        &.road-trip {
+            .btn {
+                @extend .position-absolute;
+                left: 0;
+                right: 0;
+                top: 60%;
+
+                max-width: 95px;
+                @include media-breakpoint-up(sm) {
+                    max-width: 150px;
+                }
+
+                @include media-breakpoint-up(lg) {
+                    max-width: 228px;
+                }
+            }
+        }
+
+        .shop-now-hero-container {
+            border-radius: .1875rem;
+            box-shadow: 0 0 .25rem rgba(0, 0, 0, .33);
+            transition: box-shadow ease-in-out .15s;
+            &:hover {
+                text-decoration: none;
+                box-shadow: 0 0 .75rem rgba(0, 0, 0, .7);
+            }
+
+            @include media-breakpoint-up(md) {
+                box-shadow: 0 .1875rem .375rem rgba(0, 0, 0, .16);
+                border-radius: .625rem;
+                width: 55%;
+            }
+
+            @include media-breakpoint-up(xl) {
+                cursor: pointer;
+                width: 60%;
+                background-image: none !important;
+            }
+
+            .shop-now-hero {
+                @extend .w-100;
+                @extend .position-relative;
+                max-width: 793px;
+                border-radius: .1875rem;
+                z-index: -1;
+                
+                @include media-breakpoint-up(md) {
+                    border-radius: .625rem;
+                }
+            }
+
+            .shop-now-flag {
+                max-width: 25%;
+                top: 1rem;
+                left: 1rem;
+                @include media-breakpoint-up(sm) {
+                    top: 1.5rem;
+                    left: 1.5rem;
+                }
+
+                @include media-breakpoint-up(xl) {
+                    top: 2.25rem;
+                    left: 2.25rem;
+                }
+
+                @include media-breakpoint-up(xxl) {
+                    max-width: 175px;
+                }
+            }
+
+            .world-tour-text {
+                @include media-breakpoint-up(xl) {
+                    top: 10% !important;
+                    left: -69% !important;
+                }
+
+                @include media-breakpoint-up(xxl) {
+                    left: -71.9% !important;
+                }
+            }
+        }
+
+        .shop-now-options-container {
+            // @extend .d-none;
+            @extend .d-flex; //updated from d-md-flex
+            @extend .flex-column;
+
+            @include media-breakpoint-up(md) {
+                width: 45%;
+                overflow: visible;
+            }
+
+            @include media-breakpoint-up(xl) {
+                width: 40%;
+            }
+
+            .shop-now-text {
+                width: fit-content;
+
+                @include media-breakpoint-up(xl) {
+                    text-shadow: unset;
+                }
+
+                h2 {
+                    // color: white;
+                    @include media-breakpoint-up(xl) {
+                        color: var(--dark);
+                    }
+                }
+    
+                .shop-now-link {
+                    text-decoration: underline;
+                    // color: #F5FDC6;
+        
+                    &:hover {
+                        text-decoration: none;
+                    }
+
+                    @include media-breakpoint-up(xl) {
+                        color: var(--primary);
+                    }
+                }
+            }
+
+            .shop-now-options {
+                @extend .w-100;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-gap: 1rem;
+
+                // @include media-breakpoint-up(md) {
+                //     display: grid;
+                //     grid-template-columns: 1fr 1fr;
+                //     grid-gap: 1rem;
+                // }
+
+                .single-shop-now-container {
+                    @extend .p-md-2;
+                    @extend .w-100;
+                    @extend .m-2;
+                    @extend .m-md-0;
+                    max-width: 90%; //updated from 25%
+                    @include media-breakpoint-up(md) {
+                        max-width: unset;
+                    }
+
+                    .single-shop-now {
+                        @extend .py-2;
+                        @extend .py-md-3;
+                        @extend .w-100;
+                        @extend .d-flex;
+                        @extend .flex-column;
+                        @extend .align-items-center;
+                        @extend .justify-content-center;
+                        @extend .justify-content-md-around;
+                        @extend .position-relative;
+                        border-radius: .25rem;
+                        box-shadow: 0 0 .25rem rgba(0, 0, 0, .44);
+                        transition: box-shadow ease-in-out .15s;
+
+                        &:hover {
+                            text-decoration: none;
+                            box-shadow: 0 0 .75rem rgba(0, 0, 0, .7);
+                        }
+
+                        @include media-breakpoint-up(md) {
+                            border-radius: .625rem;
+                            box-shadow: 0 0 .375rem rgba(0, 0, 0, .31);
+                            max-width: unset;
+                        }
+
+                        .flag-img {
+                            @extend .d-none; 
+                            @extend .d-md-block;
+                            @extend .position-absolute;
+                            max-width: 18%;
+                            top: 10%;
+                            left: 10%;
+                        }
+
+                        .shop-now-img {
+                            @include media-breakpoint-up(md) {
+                                max-width: 50%;
+                            }
+
+                            @include media-breakpoint-up(lg) {
+                                max-width: 60%;
+                            }
+
+                            @include media-breakpoint-up(xxl) {
+                                max-width: 65%;
+                            }
+                        }
+
+                        // safari padding bug fix
+                        .pouch-img {
+                            @include media-breakpoint-up(lg) {
+                                max-height: 109px;
+                            }
+
+                            @include media-breakpoint-up(xl) {
+                                max-height: 117px;
+                            }
+
+                            @include media-breakpoint-up(xxl) {
+                                max-height: 153.39px;
+                            }
+                        }
+
+                        .shop-now-title {
+                            @extend .text-white;
+                            @extend .text-center;
+                            @extend .text-shadow-sm;
+                            @extend .d-none;
+                            @extend .d-md-block;
+                            @extend .mt-2;
+                            @extend .mb-0; 
+                            @extend .h8;
+                            @extend .h7-lg;
+                            @extend .h6-xl;
+                            @extend .font-weight-bold;
+                        }
+                    }
+
+                    .single-drink {
+                        background-color: #25C2E6;
+                    }
+
+                    .single-kitkat.odd {
+                        background-color: #e64141;
+                    }
+
+                    .single-kitkat.even {
+                        background-color: #73cf6e;
+                    }
+
+                    .single-pk {
+                        background-color: #27a468;
+                    }
+
+                    .single-nz {
+                        background-color: #175fa5;
+                    }
+
+                    .single-wt {
+                        background-color: #709bbb;
+                    }
+
+                    .single-cz {
+                        background-color: #0c5e89;
+                    }
+
+                    .single-gm {
+                        background-color: #ba72af;
+                    }
+
+                    .single-turk {
+                        background-color: #f8d37c;
+                    }
+
+                    .single-road-trip {
+                        background-color: #0f559c;
+                    }
+
+                    .single-uk {
+                        background-color: #7faedd;
+                    }
+                    .single-cd {
+                        background-color: #251A53;
+                    }
+                }
+            }
+        }
+    } // end shop-now
+
+    // categories classes are for Best-Selling Items, Top Rated, and Popular Categories sections
+    .categories {
+        padding-right: 0;
+
+        @include media-breakpoint-up(md) {
+            padding-right: 15px;
+        }
+        .categories-container {
+            overflow-x: scroll;
+            @include media-breakpoint-up(lg) {
+                overflow-x: visible;
+            }
+
+            .categories-options {
+                @extend .d-flex;
+                @extend .align-items-start;
+                @extend .justify-content-start;
+                @extend .justify-content-lg-center;
+
+                width: 636px;
+
+                @include media-breakpoint-up(sm) {
+                    width: 816px;
+                }
+
+                @include media-breakpoint-up(lg) {
+                    width: 100%;
+                }
+    
+                .single-pop-cat {
+                    @extend .align-items-center;
+                }
+
+                .single-snack,
+                .single-pop-cat {
+                    @extend .d-flex;
+                    @extend .flex-column;
+                    @extend .justify-content-center;
+                    @extend .m-2;
+                    @extend .mx-lg-3;
+
+                    &:first-of-type {
+                        @extend .ml-lg-0;
+                    }
+
+                    &:last-of-type {
+                        @extend .mr-lg-0;
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        width: calc(100% / 6);
+                    }
+        
+                    .snack-btn,
+                    .pop-cat-btn {
+                        @extend .d-flex;
+                        @extend .flex-column;
+                        @extend .align-items-center;
+                        @extend .justify-content-center;
+                        @extend .position-relative;
+                        @extend .mb-2;
+                        @extend .mb-lg-3;
+                        @extend .w-100;
+                        background-color: #fff;
+                        max-width: 90px;
+                        height: 90px;
+                        border-radius: .1875rem;
+                        box-shadow: 0 0 .25rem rgba(0, 0, 0, .16);
+                        transition: box-shadow ease-in-out .15s;
+        
+                        &:hover {
+                            box-shadow: 0 0 .75rem rgba(0, 0, 0, .5);
+                        }
+
+                        @include media-breakpoint-up(sm) {
+                            max-width: 120px;
+                            height: 120px;
+                        }
+        
+                        @include media-breakpoint-up(md) {
+                            border-radius: .625rem;
+                            box-shadow: 0 0 .375rem rgba(0, 0, 0, .16);
+                        }
+
+                        @include media-breakpoint-up(lg) {
+                            max-width: 128px;
+                            height: 128px;
+                        }
+
+                        @include media-breakpoint-up(xl) {
+                            max-width: 158px;
+                            height: 158px;
+                        }
+
+                        @include media-breakpoint-up(xxl) {
+                            max-width: 191px;
+                            height: 191px;
+                        }
+
+                        .flag-img {
+                            @extend .position-absolute;
+                            @extend .d-none; 
+                            @extend .d-lg-block;
+                            max-width: 25px;
+                            top: .5rem;
+                            left: .5rem;
+
+                            @include media-breakpoint-up(xl) {
+                                max-width: 35px;
+                            }
+    
+                            @include media-breakpoint-up(xxl) {
+                                max-width: 42px;
+                            }
+                        }
+                    }
+
+                    .snack-title {
+                        @extend .h8;
+                        @extend .h7-sm;
+                        @extend .h5-xl;
+                        @extend .h4-xxl;
+                        @extend .font-weight-medium;
+                        @extend .text-gray;
+                        @extend .text-left;
+                        @extend .mb-0;
+                        @extend .mb-xl-1;
+                        max-width: 81px;
+
+                        @include media-breakpoint-up(sm) {
+                            max-width: 120px;
+                        }
+
+                        @include media-breakpoint-up(lg) {
+                            max-width: 128px;
+                        }
+
+                        @include media-breakpoint-up(xl) {
+                            max-width: 158px;
+                            line-height: 2rem;
+                        }
+
+                        @include media-breakpoint-up(xxl) {
+                            max-width: 191px;
+                        }
+                    }
+
+                    .cat-title {
+                        @extend .h8;
+                        @extend .h6-sm;
+                        @extend .h5-xl;
+                        @extend .h4-xxl;
+                        @extend .font-weight-semibold;
+                        @extend .text-dark;
+                    }
+
+                    .review-stars {
+                        .icon-star {
+                            height: .75rem;
+                            width: .75rem;
+    
+                            @include media-breakpoint-up(md) {
+                                height: 1rem;
+                                width: 1rem;
+                            }
+    
+                            @include media-breakpoint-up(xl) {
+                                height: 1.25rem;
+                                width: 1.25rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } // end snack-collection
+
+    // upsell section
+    .upsell-chip-crate {
+        height: 540px;
+        border-radius: .1875rem;
+        box-shadow: 0 0 .25rem rgba(0, 0, 0, .33);
+        background: url('/wp-content/uploads/2023/01/chipcrate-banner-mobile-min.png') no-repeat 50% 20%;
+        background-size: cover;
+
+        @include media-breakpoint-up(md) {
+            background: url('/wp-content/uploads/2023/01/chipcrate-banner-desktop-min.png') no-repeat center;
+            background-size: cover;
+            background-position: left top;
+            height: 300px;
+            border-radius: .625rem;
+        }
+
+        @include media-breakpoint-up(lg) {
+            height: 400px;
+        }
+
+        @include media-breakpoint-up(xl) {
+            height: 500px;
+        }
+
+        .upsell-text {
+            h3 {
+                @include media-breakpoint-up(xxl) {
+                    font-size: 114px !important;
+                }
+            }
+
+            h3,
+            span {
+                text-shadow: 2px 2px 7px rgba(0, 0, 0, .33);
+                line-height: 1;
+            }
+
+            .btn {
+                box-shadow: 3px 3px 4px rgba(0, 0, 0, .14);
+            }
+        }
+    }
+
+    .bogo {
+        .bogo-content {
+
+            video {
+            overflow: hidden;
+            border-radius: .1875rem;
+            //background: linear-gradient(to top left, var(--dark), #5E66A3);
+            box-shadow: 0 0 .25rem rgba(0, 0, 0, .33);
+            
+                @include media-breakpoint-up(md) {
+                    border-radius: .625rem;
+                    box-shadow: 0 .1875rem .375rem rgba(0, 0, 0, .16);
+                }
+            }
+
+            .bogo-text {
+                width: fit-content !important;
+                width: 54% !important;
+                top: 50%;
+                transform: translateY(-50%);
+
+
+                h3 {
+                    text-shadow: 2px 2px 7px rgba(0, 0, 0, .33);
+                    line-height: 1;
+
+                    @include media-breakpoint-up(lg) {
+                        text-shadow: 5px 5px 15px rgba(0, 0, 0, .33);
+                    }
+
+                    @include media-breakpoint-up(xxl) {
+                        font-size: 114px !important;
+                    }
+                }
+
+                span {
+                    text-shadow: 2px 2px 7px rgba(0, 0, 0, .5);
+
+                    @include media-breakpoint-up(lg) {
+                        text-shadow: 5px 5px 12px rgba(0, 0, 0, .33);
+                    }
+                }
+
+                .btn {
+                    max-width: 95px;
+
+                    @include media-breakpoint-up(sm) {
+                        max-width: 150px;
+                    }
+
+                    @include media-breakpoint-up(md) {
+                        max-width: 228px;
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        max-width: 250px;
+                    }
+
+                    @include media-breakpoint-up(xl) {
+                        max-width: 290px;
+                    }
+                }
+            }
+        }
+    } // end bogo
+}

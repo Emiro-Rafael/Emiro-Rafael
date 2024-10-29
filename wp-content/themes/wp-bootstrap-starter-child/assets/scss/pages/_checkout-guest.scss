@@ -1,0 +1,103 @@
+.checkout-guest {
+
+    .container {
+
+        .signInBtn {
+            text-decoration: none;
+            border-bottom: 2px solid #00a7ce;
+            max-width: fit-content;
+    
+            &:hover {
+                border-bottom: 2px solid #006982;
+                text-decoration: none;
+            }
+        }
+    }
+
+    .main-container {
+        @include media-breakpoint-up(xxl) {
+            max-width: 1245px;
+        }
+
+        .form-container {
+            max-width: 400px;
+        
+            @include media-breakpoint-up(md) {
+                max-width: 720px;
+            }
+            
+            .sr-only {
+                position:absolute;
+                left:-10000px;
+                top:auto;
+                width:1px;
+                height:1px;
+                overflow:hidden;
+            }
+            label {
+                @extend .h7;
+                @extend .h6-md;
+                @extend .mb-1;
+                @extend .text-gray;
+                @extend .font-weight-medium;
+            }
+
+            select,
+            input[type="text"] {
+                @extend .h7;
+                @extend .h6-md;
+                @extend .font-weight-medium;
+                @extend .border-0;
+                @extend .p-2;
+                @extend .p-md-3;
+                @extend .mb-2;
+                @extend .mb-md-3;
+                @extend .w-100;
+
+                -webkit-appearance: none;
+                box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+                border-radius: .25rem;
+
+                @include media-breakpoint-up(md) {
+                    border-radius: .4375rem;
+                }
+
+            }
+
+            input {
+                @extend .text-dark;
+            }
+
+            select {
+                -webkit-appearance: none;
+                background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%'><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+                background-size: 12px;
+                background-position: calc(100% - 12px) 60%;
+                background-repeat: no-repeat;
+                color: lightgray;
+
+                @include media-breakpoint-up(md) {
+                    height: 3.375rem;
+                }
+            }
+
+            #optin_block {
+                @extend .ml-xxl-3;
+            }
+
+            .guest-submit {
+                .btn {
+                    height: 37px;
+                    @include media-breakpoint-up(md) {
+                        height: 56px;
+                        border-radius: .4375rem !important;
+                    }
+                }
+            }
+        }
+
+        .sign-in-summary {
+            max-width: 430px;
+        }
+    }
+}

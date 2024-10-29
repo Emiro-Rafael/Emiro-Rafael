@@ -1,0 +1,83 @@
+.snack-poll-modal {
+    .modal-dialog {
+        @extend .mx-auto;
+        max-width: unset;
+        @include media-breakpoint-up(lg) {
+            max-width: 75%;
+        }
+        @include media-breakpoint-up(xl) {
+            max-width: 1000px;
+        }
+        .modal-content {
+            border-radius: 7px;
+            .modal-header {
+                border-radius: 7px 7px 0 0;
+                .close-snack-poll-modal {
+                    right: 7px;
+                    top: 0;
+                    font-size: 1.5rem;
+                    color: #ffffff;
+                    background-color: transparent;
+                    border: none;
+                    outline: none;
+
+                    @include media-breakpoint-up(md) {
+                        right: 10px;
+                        font-size: 2rem;
+                    }
+                }
+            }
+
+            .modal-body {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-gap: 15px;
+                height: 80vh;
+                overflow: scroll;
+
+                @include media-breakpoint-up(md) {
+                    grid-template-columns: 1fr 1fr 1fr;
+                    grid-gap: 20px;
+                }
+                @include media-breakpoint-up(lg) {
+                    grid-template-columns: 1fr 1fr 1fr 1fr;
+                    grid-gap: 24px;
+                }
+
+                .single-snack {
+                    @extend .d-flex;
+                    @extend .flex-column;
+                    @extend .align-items-center;
+                    @extend .justify-content-start;
+                    @extend .btn;
+                    @extend .px-0;
+                    @extend .py-3;
+                    transition: all .15s ease-in-out;
+                    border-radius: 7px;
+                    box-shadow: 0 0 10px rgba(0, 0 ,0, .12);
+
+                    &:hover {
+                        box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
+                    }
+
+                    &:active,
+                    &:focus {
+                        opacity: .7;
+                    }
+
+                    .img-fluid {
+                        @extend .mb-2;
+                    }
+
+                    h5 {
+                        @extend .h8;
+                        @extend .h7-md; 
+                        @extend .h6-xl;
+                        @extend .px-3;
+                        @extend .mb-0;
+                    }
+                }
+            }
+        }
+    }
+}

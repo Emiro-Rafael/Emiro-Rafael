@@ -1,0 +1,159 @@
+form[name='signInForm'] {
+    &.ajax_form {
+        .sr-only {
+            position:absolute;
+            left:-10000px;
+            top:auto;
+            width:1px;
+            height:1px;
+            overflow:hidden;
+        }
+        label {
+            @extend .h7;
+            @extend .h6-md;
+            @extend .mb-1;
+            @extend .text-uppercase;
+            @extend .text-gray;
+            @extend .font-weight-medium;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            @extend .h7;
+            @extend .h6-md;
+            @extend .text-dark;
+            @extend .font-weight-medium;
+            @extend .border-0;
+            @extend .p-2;
+            @extend .p-md-3;
+            @extend .mb-2;
+            @extend .mb-md-3;
+            @extend .w-100;
+
+            -webkit-appearance: none;
+            box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+            border-radius: .25rem;
+            @include media-breakpoint-up(md) {
+                border-radius: .4375rem;
+            }
+        }
+
+        .sign-in-password {
+            .password-toggle {
+                top: 7px;
+                right: 8px;
+                @include media-breakpoint-up(md) {
+                    right: 16px;
+                    top: 16px;
+                }
+
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .sign-in-keep {
+            input,
+            label {
+                @extend .mb-0;
+                text-transform: none !important;
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+
+            input[type="checkbox"] {
+                opacity: 0;
+            }
+            label::before {
+                content: "";
+                display: inline-block;
+                
+                height: 17px;
+                width: 17px;
+                
+                border: 2px solid #00A7CE; 
+                border-radius: 2px;
+                top: 2px;
+                left: -22px;
+                @include media-breakpoint-up(lg) {
+                    top: 3px;
+                }
+            }
+
+            label::after {
+                content: "";
+                display: inline-block;
+                height: 6px;
+                width: 11px;
+                border-left: 2px solid #fff;
+                border-bottom: 2px solid #fff;
+                transform: rotate(-45deg);
+                left: -19px;
+                top: 6px;
+                @include media-breakpoint-up(lg) {
+                    top: 7px;
+                }
+            }
+
+            label::before,
+            label::after {
+                position: absolute;
+            }
+
+            /*Hide the checkmark by default*/
+            input[type="checkbox"] + label::after {
+                content: none;
+            }
+            /*Unhide the checkmark on the checked state*/
+            input[type="checkbox"]:checked + label::after {
+                content: "";
+            }
+
+            input[type="checkbox"]:checked + label::before {
+                background-color: var(--primary);
+            }
+
+            /*Adding focus styles on the outer-box of the fake checkbox*/
+            input[type="checkbox"]:focus + label::before {
+                box-shadow: 0 0 0 0.2rem rgba(0, 167, 206, .5);
+            }
+        }
+
+        .sign-in-submit {
+            .btn {
+                height: 37px;
+                @include media-breakpoint-up(md) {
+                    height: 56px;
+                    border-radius: .4375rem !important;
+
+                }
+            }
+        }
+
+        .checkout-guest {
+            text-decoration: underline;
+        }
+    }
+}
+
+
+.appleid-signin {
+    @extend .btn;
+    overflow: hidden;
+    color: #fff;
+    background: #000;
+    
+    .fa-apple {
+        @extend .mr-2;
+    }
+
+    &:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    @include media-breakpoint-up(md) {
+        height: 56px;
+        border-radius: .4375rem !important;
+    }
+}

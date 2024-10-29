@@ -1,0 +1,63 @@
+.create-account {
+    .container {
+        .appleid {
+            background-color: black;
+            height: 37px;
+            @include media-breakpoint-up(md) {
+                height: 56px;
+                border-radius: .4375rem !important;
+            }
+        }
+        .form-container {
+            max-width: 400px;
+            .ajax_form {
+                .sr-only {
+                    position:absolute;
+                    left:-10000px;
+                    top:auto;
+                    width:1px;
+                    height:1px;
+                    overflow:hidden;
+                }
+                label {
+                    @extend .h7;
+                    @extend .h6-md;
+                    @extend .h5-xl;
+                    @extend .mb-1;
+                    @extend .mb-md-2;
+                    @extend .text-dark;
+                    @extend .font-weight-bold;
+                }
+    
+                input[type="password"],
+                input[type="text"] {
+                    @extend .h7;
+                    @extend .h6-md;
+                    @extend .text-dark;
+                    @extend .font-weight-medium;
+                    @extend .border-0;
+                    @extend .p-2;
+                    @extend .p-md-3;
+                    @extend .w-100;
+    
+                    box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+                    border-radius: .25rem;
+                    @include media-breakpoint-up(md) {
+                        border-radius: .4375rem;
+                    }
+                }
+
+                .create-account-submit {
+                    .btn {
+                        height: 37px;
+                        @include media-breakpoint-up(md) {
+                            height: 56px;
+                            border-radius: .4375rem !important;
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

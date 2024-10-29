@@ -1,0 +1,104 @@
+.collections {
+    .container {
+        .breadcrumb {
+
+            .fa-chevron-right {
+                font-size: .5rem;
+            }
+
+            .breadcrumb-item {
+                @extend .h8;
+                @extend .h7-md;
+            }
+
+            .breadcrumb-item+.breadcrumb-item:before {
+                content: "";
+            }
+        }
+
+        .collections-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 12px;
+
+            @include media-breakpoint-up(sm) {
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-gap: 16px;
+            }
+
+            @include media-breakpoint-up(md) {
+                grid-gap: 24px;
+            }
+
+            @include media-breakpoint-up(lg) {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                grid-gap: 32px;
+            }
+
+            @include media-breakpoint-up(xl) {
+                grid-gap: 40px;
+            }
+
+            .single-collection {
+                @extend .w-100;
+                background-color: var(--gray-light);
+                border-radius: .25rem;
+
+                @include media-breakpoint-up(sm) {
+                    background-color: transparent;
+                }
+
+                &:hover {
+                    text-decoration: none;
+
+                    .collection-img {
+                        transition: box-shadow ease-in-out .15s;
+
+                        @include media-breakpoint-up(sm) {
+                            box-shadow: 0 0 .5rem rgba(0, 0, 0, .5);
+                        }
+    
+                        @include media-breakpoint-up(md) {
+                            box-shadow: 0 0 .75rem rgba(0, 0, 0, .5);
+                        }
+    
+                        @include media-breakpoint-up(lg) {
+                            box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
+                        }
+                    }
+                }
+
+                .collection-img {
+                    border-radius: .1875rem;
+
+                    @include media-breakpoint-up(sm) {
+                        border-radius: .25rem;
+                        box-shadow: 0 0 .5rem rgba(0, 0, 0, .16);
+                    }
+
+                    @include media-breakpoint-up(md) {
+                        border-radius: .3125rem;
+                        box-shadow: 0 0 .75rem rgba(0, 0, 0, .16);
+                    }
+
+                    @include media-breakpoint-up(lg) {
+                        border-radius: .4375rem;
+                        box-shadow: 0 0 1rem rgba(0, 0, 0, .16);
+                    }
+
+                    @include media-breakpoint-up(xl) {
+                        border-radius: .625rem;
+                    }
+                }
+
+                h2 {
+                    color: var(--dark);
+
+                    @include media-breakpoint-up(sm) {
+                        color: var(--gray-dark);
+                    }
+                }
+            }
+        }
+    }
+}

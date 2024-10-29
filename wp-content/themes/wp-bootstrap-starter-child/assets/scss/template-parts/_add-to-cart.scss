@@ -1,0 +1,74 @@
+.ajax_form {
+    .select-quantity {
+                
+        label {
+            top: -10px;
+            left: 8px;
+            padding: 0 3px;
+            @include media-breakpoint-up(md) {
+                font-size: 14px;
+                top: -12px;
+                left: 11px;
+            }
+            @include media-breakpoint-up(lg) {
+                left: 19px;
+            }
+        }
+
+        select {
+            height: 36px;
+            width: 75px;
+            border-radius: 40px;
+            padding: 0 .75rem;
+            @include media-breakpoint-up(md) {
+                height: 45px;
+                width: 90px;
+                padding: 0 1rem;
+            }
+            @include media-breakpoint-up(lg) {
+                border-radius: 40px;
+                height: 54px;
+                width: 106px;
+                padding: 0 1.5rem;
+            }
+        }
+    }
+
+    .add_to_cart {
+        height: 36px;
+        width: 100%;
+
+        @include media-breakpoint-up(sm) {
+            width: 200px;
+        }
+        @include media-breakpoint-up(md) {
+            height: 45px;
+            width: 218px;
+        }
+        @include media-breakpoint-up(lg) {
+            border-radius: 40px !important;
+            height: 54px;
+            width: 283px;
+        }
+
+        &:disabled {
+            background-color: #bdbdbd !important;
+            border-color: #bdbdbd !important;
+        } 
+    }
+}
+
+.button-height-equalizer {
+    @extend .mt-3;
+    @extend .mt-md-4;
+    @extend .mt-xl-5;
+    height: 36px;
+    width: 100%;
+
+    @include media-breakpoint-up(md) {
+        height: 45px;
+    }
+    @include media-breakpoint-up(lg) {
+        height: 54px;
+    }
+}

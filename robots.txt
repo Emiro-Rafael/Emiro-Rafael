@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /fulfillment/
+Disallow: /cdn-cgi/
+

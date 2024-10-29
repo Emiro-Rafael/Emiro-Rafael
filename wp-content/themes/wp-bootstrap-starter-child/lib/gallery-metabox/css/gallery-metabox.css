@@ -1,0 +1,18 @@
+
+.vdw-metabox__list {
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100% + 20px);
+  margin: 0 -10px -10px;
+}
+.vdw-metabox__list li {
+  float: unset;
+  width: calc(50% - 20px);
+  margin: 0 10px 10px;
+  max-width: 150px;
+  text-align: center;
+  cursor: move;
+}
+.vdw-metabox__list li > img {
+  width: 100%;
+}

@@ -1,0 +1,13 @@
+.rotate-infinite {
+	animation: rotate-infinite 40s linear infinite;
+}
+
+.rotate-infinite-reverse {
+	animation: rotate-infinite 40s linear infinite reverse;
+}
+
+@keyframes rotate-infinite {
+	100% {
+		transform: rotate(360deg);
+	}
+}

@@ -1,0 +1,51 @@
+.edit-payment-modal,
+.edit-shipping-address-modal {
+    .credit-card-info {
+        border-radius: .25rem;
+        overflow: hidden;
+        box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+        input {
+            box-shadow: none;
+            @extend .mb-0;
+        }
+    }
+
+    label {
+        @extend .h7;
+        @extend .h6-lg;
+        @extend .mb-1;
+        @extend .text-uppercase;
+        @extend .text-gray;
+        @extend .font-weight-medium;
+    }
+
+    select {
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%'><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+        background-size: 10px;
+        background-position: calc(100% - 12px) 60%;
+        background-repeat: no-repeat;
+    }
+
+    input,
+    select {
+        @extend .h7;
+        @extend .h6-lg;
+        @extend .font-weight-semibold;
+        @extend .border-0;
+        @extend .py-3;
+        @extend .mb-2;
+        @extend .mb-lg-3;
+
+        -webkit-appearance: none;
+        height: 3rem;
+        box-shadow: 0 1px .25rem rgba(0, 0, 0, .16);
+
+        @include media-breakpoint-up(lg) {
+            height: 3.5rem;
+        }
+    }
+
+    input {
+        @extend .text-dark;
+    }
+}
