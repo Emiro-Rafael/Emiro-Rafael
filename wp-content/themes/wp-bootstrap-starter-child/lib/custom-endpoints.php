@@ -456,3 +456,34 @@ add_action( 'rest_api_init', function() {
         'permission_callback' => '__return_true',
     ) );
 });
+
+function get_candy_title(WP_REST_Request $request)
+{
+    try
+    {    
+        $data = array_map( 'esc_attr', $request->get_params() );
+
+        $result = [];
+
+        $item_ids = explode(',', $data['item_ids']);
+
+        foreach($item_ids as $item_id)
+        {
+            $result[$item_id] = get_the_title($item_id);
+        }
+
+        return $result;
+    }
+    catch(Exception $e)
+    {
+        return false;
+    }
+}
+
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'candybar-api/v1', 'get-candy-title', array(
+        'methods'  => 'GET',
+        'callback' => 'get_candy_title',
+        'capability' => '',
+    ) );
+} );

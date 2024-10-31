@@ -87,6 +87,9 @@ require_once get_stylesheet_directory() . '/lib/theme-helpers.php';
 // gallery metabox
 require_once get_stylesheet_directory() . '/lib/gallery-metabox/gallery.php';
 
+// zebraprint
+require_once get_stylesheet_directory() . '/lib/zebra-print.class.php';
+
 // set URL of sync posts target site
 $host_url = parse_url( get_site_url(), PHP_URL_HOST );
 $account_site_url = '';
@@ -306,3 +309,16 @@ function get_current_user_role() {
 
     return $user_vars['roles'][0];
 }
+
+
+function submit_zebraprint_file()
+{
+    $zp = new ZebraPrint();
+
+    $response = $zp->sendFileToPrinter($_POST['printerId'], $_POST['fileUrl']);
+
+    wp_send_json($response);
+}
+
+add_action('admin_post_submit_zebraprint_file', 'submit_zebraprint_file');
+add_action('admin_post_nopriv_submit_zebraprint_file', 'submit_zebraprint_file');

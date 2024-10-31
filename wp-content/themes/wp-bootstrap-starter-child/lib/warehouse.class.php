@@ -349,6 +349,8 @@ class Warehouse
 
     private function _getCustomerItems($printable = false)
     {
+        $all_part_ids = [];
+        $part_types_ids = [];
         if($printable)
         {
             $stmt = $this->dbh->prepare("SELECT id, purchased, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'printable' AND in_main_table = 0 AND hidden = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
@@ -406,12 +408,15 @@ class Warehouse
                         if($main_part != NULL) {
                             $part_id = $main_part->pk;
                             $boms = $inventree->getBOMByPartId($part_id);
-
+                            
                             if(empty($boms)) {
+                                $all_part_ids[] = $part_id;
+                                $part_types_ids[$part_id] = 'snack';
                                 if( !array_key_exists( $part_id, $items ) )
                                 {
                                     $total_items++;
                                     $items[$part_id] = new stdClass();
+                                    $items[$part_id]->pk = $part_id;
                                     $items[$part_id]->item_name = get_the_title( $post_id );
                                     if(is_array($details)) {
                                         foreach($details as $quantity)
@@ -431,12 +436,15 @@ class Warehouse
                             else {
                                 foreach($boms as $bom) {
                                     $sub_part_id = $bom->sub_part;
+                                    $all_part_ids[] = $sub_part_id;
+                                    $part_types_ids[$sub_part_id] = 'snack bom';
                                     $sub_part_quantity = $bom->quantity;
                                     $sub_part = $inventree->getInventreePartById($sub_part_id);
                                     $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
                                     if( !array_key_exists( $sub_part_id, $items ) ) {
                                         $total_items++;
                                         $items[$sub_part_id] = new stdClass();
+                                        $items[$sub_part_id]->pk = $sub_part_id;
                                         $items[$sub_part_id]->item_name = $sub_part->name;
                                         if(is_array($details)) {
                                             foreach($details as $quantity)
@@ -484,12 +492,17 @@ class Warehouse
                                 }
 
                                 $part = $inventree -> getInventreePartByIPN($internal_id_code);
+                                $part_id = $part->pk;
+                                $all_part_ids[] = $part_id;
+                                $part_types_ids[$part_id] = 'country';
 
                                 $items[$key][$size] = new stdClass();
+                                $items[$key][$size]->pk = $part_id;
                                 $items[$key][$size]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
                                 $items[$key][$size]->quantity = $quantity;
                                 $items[$key][$size]->barcode = $this->getBarcodeFromPart( $part);
                                 $items[$key][$size]->img = $this->getItemImage($post_id);
+                                $items[$key][$size]->customization = $row->customization_notes;
                             }
                             else
                             {
@@ -510,10 +523,13 @@ class Warehouse
                                 $boms = $inventree->getBOMByPartId($part_id);
 
                                 if(empty($boms)) {
+                                    $all_part_ids[] = $part_id;
+                                    $part_types_ids[$part_id] = 'collection';
                                     if( !array_key_exists( $part_id, $items ) )
                                     {
                                         $total_items++;
                                         $items[$part_id] = new stdClass();
+                                        $items[$part_id]->pk = $part_id;
                                         $items[$part_id]->item_name = get_the_title( $post_id );
                                         $items[$part_id]->quantity = $details;
                                         $items[$part_id]->barcode =  $this->getBarcodeFromPart( $main_part);
@@ -524,16 +540,18 @@ class Warehouse
                                     {
                                         $items[$part_id]->quantity += $details;
                                     }    
-                                }
-                                else {
+                                } else {
                                     foreach($boms as $bom) {
                                         $sub_part_id = $bom->sub_part;
+                                        $all_part_ids[] = $sub_part_id;
+                                        $part_types_ids[$sub_part_id] = 'collection bom';
                                         $sub_part_quantity = $bom->quantity;
                                         $sub_part = $inventree->getInventreePartById($sub_part_id);
                                         $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
                                         if( !array_key_exists( $sub_part_id, $items ) ) {
                                             $total_items++;
                                             $items[$sub_part_id] = new stdClass();
+                                            $items[$sub_part_id]->pk = $sub_part_id;
                                             $items[$sub_part_id]->item_name = $sub_part->name;
                                             $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
                                             $items[$sub_part_id]->barcode = $this->getBarcodeFromPart( $sub_part);
@@ -545,12 +563,13 @@ class Warehouse
                                     }
                                 }
 
-                            }
-                            else {
+                            } else {
 
                                 $part_id = $main_part->pk;
                                 $boms = $inventree->getBOMByPartId($part_id);
                                 if(empty($boms)) {
+                                    $all_part_ids[] = $part_id;
+                                    $part_types_ids[$part_id] = 'collection no details';
                                     foreach($details as $size => $quantity)
                                     {
                                         if( !array_key_exists( $part_id, $items ) )
@@ -562,6 +581,7 @@ class Warehouse
                                         {
                                             $total_items++;
                                             $items[$part_id] = new stdClass();
+                                            $items[$part_id]->pk = $part_id;
                                             $items[$part_id]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
                                             $items[$part_id]->quantity = $quantity;
                                             $items[$part_id]->barcode =$this->getBarcodeFromPart( $main_part);
@@ -575,6 +595,8 @@ class Warehouse
                                 }else {
                                     foreach($boms as $bom) {
                                         $sub_part_id = $bom->sub_part;
+                                        $all_part_ids[] = $sub_part_id;
+                                        $part_types_ids[$sub_part_id] = 'collection no details bom';
                                         $sub_part_quantity = $bom->quantity;
                                         $sub_part = $inventree->getInventreePartById($sub_part_id);
                                         $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
@@ -589,6 +611,7 @@ class Warehouse
                                             {
                                                 $total_items++;
                                                 $items[$sub_part_id] = new stdClass();
+                                                $items[$sub_part_id]->pk = $sub_part_id;
                                                 $items[$sub_part_id]->item_name = $sub_part->name;
                                                 $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
                                                 $items[$sub_part_id]->barcode =$this->getBarcodeFromPart( $sub_part);
@@ -618,6 +641,29 @@ class Warehouse
         $stmt = $this->dbh->prepare("UPDATE " .self::$order_table. " SET session_id = :session_id WHERE id IN ({$order_ids})");
         $stmt->bindParam(":session_id", $session_id);
         $stmt->execute();
+
+        if (!empty($all_part_ids)) {
+            $all_part_ids = array_unique($all_part_ids);
+            // error_log(print_r($part_types_ids, 1));
+            $parameters = $inventree->getParametersForParts($all_part_ids);
+            
+            // Attach parameters to items
+            foreach ($items as $key => &$item) {
+                if (is_array($item)) {
+                    // For country items that have sizes
+                    foreach ($item as &$size_item) {
+                        if (isset($size_item->pk) && isset($parameters[$size_item->pk])) {
+                            $size_item->parameters = $parameters[$size_item->pk];
+                        }
+                    }
+                } else {
+                    // For regular items
+                    if (isset($item->pk) && isset($parameters[$item->pk])) {
+                        $item->parameters = $parameters[$item->pk];
+                    }
+                }
+            }
+        }
 
         return array(
             'items' => $items,

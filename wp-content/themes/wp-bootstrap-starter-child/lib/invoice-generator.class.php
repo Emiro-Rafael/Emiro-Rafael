@@ -265,17 +265,24 @@ class InvoiceGenerator extends Fulfillment
 
                     case 'country':
                     case 'collection':
-                        foreach( $details as $crate_size => $quantity)
-                        {
-                            $description = get_the_title( $post_id ) . ' ' . CountryModel::$pretty_names[$crate_size];
-                            $this->_generateLineItem( $x, $y, $post_id, $description, $quantity, $j, $crate_size );
-                            
-                            $j++;
-
-                            $this->pdf->Image($this->divider_line, $x2, $y2+=9, 208, 0);
-                            $x = 19;
-                            $y += 8.5;
+                        if(!is_array($details)) {
+                            $description = get_the_title( $post_id );
+                            $quantity = $details;
+                            $this->_generateLineItem( $x, $y, $post_id, $description, $quantity, $j );
+                        } else {
+                            foreach( $details as $crate_size => $quantity)
+                            {
+                                $description = get_the_title( $post_id ) . ' ' . CountryModel::$pretty_names[$crate_size];
+                                $this->_generateLineItem( $x, $y, $post_id, $description, $quantity, $j, $crate_size );
+                            }
                         }
+
+                        $j++;
+
+                        $this->pdf->Image($this->divider_line, $x2, $y2+=9, 208, 0);
+                        $x = 19;
+                        $y += 8.5;
+
                         break;
                 }
             }

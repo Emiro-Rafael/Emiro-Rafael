@@ -45,7 +45,7 @@ get_header();
  					<div class="hero-content position-relative mb-5 ml-4 ml-md-5 pl-2 pl-md-4 pl-xl-5">
  						<h3 class="text-uppercase text-white text-left font-weight-bolder mb-1 h5 h4-md h1-xl">Limited Edition:</h3>
  						<h1 class="colombia-text font-weight-bolder mb-4 text-left ml-n1">Skittles<br>Crate</h1>
- 						<a href="/collections/uk-skittles/" class="btn btn-secondary text-white h8 h6-md h5-xl d-flex justify-content-center align-items-center px-4 w-100">Shop Now</a>
+ 						<a href="/collections/british-skittles/" class="btn btn-secondary text-white h8 h6-md h5-xl d-flex justify-content-center align-items-center px-4 w-100">Shop Now</a>
 			</div>
 			</section>
 		</div>
@@ -58,7 +58,7 @@ get_header();
 						<img class="shop-now-hero img-fluid" alt="Cadbury Image" src="<?php echo get_bloginfo('url')?>/wp-content/uploads/2024/04/SC_WEB_CandyBar_UK_Hero Card_50-min.png">
 					</a>
 
-					<a class="d-none btn btn-sm btn-secondary shadow text-white py-md-2 py-xl-3 mb-1 mx-auto w-100 h9 h7-sm h6-lg" href="/collections/uk-skittles/">Shop Now</a>
+					<a class="d-none btn btn-sm btn-secondary shadow text-white py-md-2 py-xl-3 mb-1 mx-auto w-100 h9 h7-sm h6-lg" href="/collections/british-skittles/">Shop Now</a>
 				</div>
 
 				<div class="shop-now-options-container ml-md-4 ml-xxl-5 mr-md-n2 mb-xl-n2">
@@ -137,7 +137,7 @@ get_header();
 
 				<div class="shop-now-hero-container position-relative">
 
-					<a class="d-block" href="/collections/uk-skittles">
+					<a class="d-block" href="/collections/british-skittles">
 						<img class="shop-now-hero img-fluid" alt="British Skittles" src="<?php echo get_bloginfo('url')?>/wp-content/uploads/2024/04/Skittles_Preview Card_50-min.png">
 					</a>
 
@@ -147,7 +147,7 @@ get_header();
 				<div class="shop-now-options-container mr-md-4 mr-xxl-5 ml-md-n2 mb-xl-n2">
 					<div class="shop-now-text world-tour-text d-flex flex-column align-items-start justify-content-center pl-2 mb-2 mb-xxl-4">
 						<h2 class="font-weight-bold mb-1 mb-xl-0 mt-3 mt-md-0">British Skittles</h2>
-						<a class="shop-now-link font-weight-semibold h8 h6-sm h4-xl" href="/collections/uk-skittles">Shop Now</a>
+						<a class="shop-now-link font-weight-semibold h8 h6-sm h4-xl" href="/collections/british-skittles">Shop Now</a>
 					</div>
 					<div class="shop-now-options mt-3 mt-md-0">
 						<div class="single-shop-now-container">

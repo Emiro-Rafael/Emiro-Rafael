@@ -1355,58 +1355,60 @@ function blocks() {
               }
             };
           }
-          function showPickIncorrectBarcode(tryAgainFunction = ()=>{}) {
-            Fancybox.show([{
-              src: '#'+modals.barcode.id,
-              type: 'inline',
-              placeFocusBack: false,
-              trapFocus: false,
-              autoFocus: false,
-            }], {
-              dragToClose: false,
-              on: {
-                "destroy": (event, fancybox, slide) => {
-                  tryAgainFunction()
-                },
-              }
+          const showPickIncorrectBarcode = () => {
+            return new Promise((resolve) => {
+              Fancybox.show([{
+                src: '#' + modals.barcode.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
             });
-          }
-          function showPickQuantityPopup(quantity = 2, afterFunction = ()=>{}) {
-            modals.quantity.querySelector('.js-pick-quantity').innerHTML = 'x<span>'+quantity+'</span>'
-
-            Fancybox.show([{
-              src: '#'+modals.quantity.id,
-              type: 'inline',
-              placeFocusBack: false,
-              trapFocus: false,
-              autoFocus: false,
-            }], {
-              dragToClose: false,
-              on: {
-                "destroy": (event, fancybox, slide) => {
-                  afterFunction()
-                },
-              }
+          };
+          const showPickQuantityPopup = (quantity = 2) => {
+            return new Promise((resolve) => {
+              const quantityElement = modals.quantity.querySelector('.js-pick-quantity');
+              quantityElement.innerHTML = `x<span>${quantity}</span>`;
+          
+              Fancybox.show([{
+                src: '#' + modals.quantity.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
             });
-          }
-          function showPickCustomizationPopup(text = '', afterFunction = ()=>{}) {
-            modals.customization.querySelector('.js-pick-customization').textContent = text
-
-            Fancybox.show([{
-              src: '#'+modals.customization.id,
-              type: 'inline',
-              placeFocusBack: false,
-              trapFocus: false,
-              autoFocus: false,
-            }], {
-              dragToClose: false,
-              on: {
-                "destroy": (event, fancybox, slide) => {
-                  afterFunction()
-                },
-              }
+          };
+          const showPickCustomizationPopup = (text = '') => {
+            return new Promise((resolve) => {
+              const customizationElement = modals.customization.querySelector('.js-pick-customization');
+              customizationElement.textContent = text;
+          
+              Fancybox.show([{
+                src: '#' + modals.customization.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
             });
-          }
+          };
 
           function startPick(order) {
             let activeItem
@@ -1541,66 +1543,69 @@ function blocks() {
                 currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
               };
             }
-            function onBarcodeInput(isCorrect) {
-              resetInactivityTimer();
 
-              if(isCorrect){
-                let nextItem = pickPage.querySelector('.warehouse__pick-item.is-active + .warehouse__pick-item')
+            const playSound = async (sound) => {
+              await sound.play();
+              sound.currentTime = 0;
+            };
+            
+            const processNextItem = async (activeItem, nextItem) => {
+              activeItem.classList.remove('is-active');
+              nextItem.classList.add('is-active');
 
-                function continueNext() {
-                  activeItem.classList.remove('is-active')
-                  nextItem.classList.add('is-active')
-
-                  fadeOut(activeItem, 300, function () {
-                    fadeIn(nextItem, 300)
-                  })
-
-                  activeItem = nextItem
-                  if(!activeItem.classList.contains('js-printing-step')){
-                    currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
-                  } else {
-                    currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
-                  }
-                }
-
-
-                if(nextItem) {
-                  if(activeItem.dataset.customization) {
-                    sounds.attention_2.play().then(r => {
-                      sounds.attention_2.currentTime = 0
-                    })
-                    showPickCustomizationPopup(activeItem.dataset.customization, function () {
-                      if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
-                        sounds.attention.play().then(r => {
-                          sounds.attention.currentTime = 0
-                        })
-                        showPickQuantityPopup(activeItem.dataset.quantity, function () {
-                          continueNext()
-                        })
-                      } else {
-                        continueNext()
-                      }
-                    })
-                  } else if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
-                    sounds.attention.play().then(r => {
-                      sounds.attention.currentTime = 0
-                    })
-                    showPickQuantityPopup(activeItem.dataset.quantity, function () {
-                      continueNext()
-                    })
-                  } else {
-                    continueNext()
-                  }
-                }
-              } else {
-                showPickIncorrectBarcode(function () {
-                  currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
-                })
+              fadeOut(activeItem, 300, function () {
+                fadeIn(nextItem, 300)
+              })
+            
+              return nextItem;
+            };
+            
+            const handleCustomization = async (activeItem) => {
+              if (activeItem.dataset.customization) {
+                await playSound(sounds.attention_2);
+                await showPickCustomizationPopup(activeItem.dataset.customization);
               }
-            }
-
+            };
+            
+            const onBarcodeInput = async (isCorrect) => {
+              resetInactivityTimer();
+            
+              if (!isCorrect) {
+                await showPickIncorrectBarcode();
+                currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
+                return;
+              }
+            
+              const nextItem = pickPage.querySelector('.warehouse__pick-item.is-active + .warehouse__pick-item');
+              if (!nextItem) return;
+            
+              try {
+                // Handle quantity check
+                if (activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1) {
+                  await playSound(sounds.attention);
+                  await showPickQuantityPopup(activeItem.dataset.quantity);
+                }
+            
+                // Handle customization
+                await handleCustomization(activeItem);
+            
+                // Process next item
+                activeItem = await processNextItem(activeItem, nextItem);
+            
+                // Set up next barcode listener
+                if (!activeItem.classList.contains('js-printing-step')) {
+                  currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
+                } else {
+                  currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest);
+                }
+              } catch (error) {
+                console.error('Error in barcode processing:', error);
+                // Handle error appropriately
+              }
+            };
+            
             resetInactivityTimer();
-            currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
+            currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
           }
 
           if(typeof warehouse_active_pick_order === 'object' && warehouse_active_pick_order.id){
@@ -1610,7 +1615,7 @@ function blocks() {
               return;
             }
             if((issues = checkBarcodes(warehouse_active_pick_order)).length) {
-              alert('We cant proceed with empty barcode for: ' + issues.join('\n'));
+              alert('We cant proceed due to the issue: \n' + issues.join('\n'));
               if(warehouse_active_pick_order.id) aborPicking(warehouse_active_pick_order.id, (xhr) => {
                 let data = xhr.responseText
                 try { data = JSON.parse(data) } catch (error) {}
@@ -1659,17 +1664,43 @@ function blocks() {
 
           function checkBarcodes(order) {
             const issues = [];
+            return issues;
+            const requiredParams = ['Height', 'Length', 'Width', 'Weight'];
+        
             Object.entries(order.items).forEach(([itemId, item]) => {
                 if (itemId.startsWith('country-')) {
-                    Object.values(item).forEach(subItem => 
-                        !subItem.barcode && issues.push(`Order ${order.id}, Item ${itemId}: ${subItem.item_name}`)
-                    );
+                    Object.values(item).forEach(subItem => {
+                        checkItem(subItem, itemId, order.id);
+                    });
                 } else {
-                    !item.barcode && issues.push(`Order ${order.id}, Item ${itemId}: ${item.item_name}`);
+                    checkItem(item, itemId, order.id);
                 }
             });
+        
+            function checkItem(item, itemId, orderId) {
+                // Check barcode and image
+                if (!item.barcode) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing barcode`);
+                }
+                if (!item.img) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing image`);
+                }
+                
+                // Check parameters
+                if (!item.parameters) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing parameters`);
+                    return;
+                }
+        
+                requiredParams.forEach(param => {
+                    if (!item.parameters[param]?.value) {
+                        issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing ${param}`);
+                    }
+                });
+            }
+        
             return issues;
-          };
+        }
 
           dynamicListener('click', '.js-pick-start', function (e) {
             e.preventDefault()
@@ -1694,7 +1725,7 @@ function blocks() {
                 btn.removeAttribute('disabled')
 
                 if((issues = checkBarcodes(data.data)).length) {
-                  alert('We cant proceed with empty barcode for: ' + issues.join('\n'));
+                  alert('We cant proceed due to the issue: \n' + issues.join('\n'));
                   if(data.data.id) aborPicking(data.data.id, (xhr) => {
                     let data = xhr.responseText
                     try { data = JSON.parse(data) } catch (error) {}

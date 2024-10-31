@@ -223,7 +223,7 @@ class EasypostHelper
 
         if(empty($possible_rates)) {
             $possible_rates = array_filter(
-                $created_shipment->rates,
+                $shipment->rates,
                 function($rate) {
                     if($rate->service == 'Express') return false;
                     if($rate->carrier == 'OSMWorldwide') return false;

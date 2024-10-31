@@ -92,10 +92,10 @@ class WarehouseAjax extends SCAjax
             $items = $warehouse->getNextOrder(false);
             $customer_info = $warehouse->getCustomerInformation();
             
-            $items['items'][0]['item_name'] = 'Allergy Test - Scan Skittles Chewies';
-            $items['items'][0]['quantity'] = '1';
-            $items['items'][0]['barcode'] = '4009900538800';
-            $items['items'][0]['customization'] = 'Allergy: Strawberries | No coconut (receive muliple Coconut Free Snacks, and a few other randoms, to fulfill the crate for August)';
+            // $items['items'][0]['item_name'] = 'Allergy Test - Scan Skittles Chewies';
+            // $items['items'][0]['quantity'] = '1';
+            // $items['items'][0]['barcode'] = '4009900538800';
+            // $items['items'][0]['customization'] = 'Allergy: Strawberries | No coconut (receive muliple Coconut Free Snacks, and a few other randoms, to fulfill the crate for August)';
 
             $order = [
                 'id' => $items['ids'],
@@ -158,7 +158,7 @@ class WarehouseAjax extends SCAjax
         try {
             $warehouse = new Warehouse();
             $orders_left = $warehouse->getOrderCount();
-            wp_send_json_success(['count' => 1]);
+            wp_send_json_success(['count' => $orders_left]);
         }
         catch(Exception $e)
         {

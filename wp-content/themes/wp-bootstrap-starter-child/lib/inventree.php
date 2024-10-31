@@ -86,7 +86,65 @@ class Inventree{
         return json_decode($response);
     }
 
-    function getInventreePartByIPN($IPN){
+
+
+
+
+
+
+
+
+
+
+
+
+    function getParametersForParts($part_ids) {
+        if (empty($part_ids)) {
+            return [];
+        }
+        
+        // Convert array of IDs to comma-separated string
+        $ids = implode(',', array_unique($part_ids));
+        $endpoint = $this->inventree_url . "/api/part/parameter/?part__in=$ids";
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $endpoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                "Authorization: Token $this->token",
+                'Content-Type: application/json'
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        
+        $parameters = json_decode($response);
+        
+        // Organize parameters by part ID
+        $paramsByPart = [];
+        foreach ($parameters as $param) {
+            if (!isset($paramsByPart[$param->part])) {
+                $paramsByPart[$param->part] = [];
+            }
+            // Use template name as key and include value and units
+            $paramsByPart[$param->part][$param->template_detail->name] = [
+                'value' => $param->data,
+                'units' => $param->template_detail->units
+            ];
+        }
+        
+        return $paramsByPart;
+    }
+
+    function getInventreePartByIPN($IPN, $include_parameters = false){
         if($IPN == '') {
             return null;
         }
@@ -111,8 +169,16 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         $response_data = json_decode($response);
+
         if(!empty($response_data)) {
-            return $response_data[0];
+            $part = $response_data[0];
+            
+            if ($include_parameters) {
+                $parameters = $this->getParametersForParts([$part->pk]);
+                $part->parameters = isset($parameters[$part->pk]) ? $parameters[$part->pk] : [];
+            }
+            
+            return $part;
         }
         return null;
     }
