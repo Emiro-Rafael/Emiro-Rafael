@@ -112,9 +112,12 @@ function generateLabelZPL($elements)
 
             // Calculate X position for centering
             $x_position = ($label_width - $barcode_width) / 2;
-            $x_position = 85;
+            $x_position = 90;
             // Construct ZPL for PDF417 barcode
-            $zpl .= "^FO$x_position,985^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
+            $zpl .= "^FO$x_position,1000^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
+
+            $width = 700; // Set the width you want for the text block
+            $zpl .= "^FO50,1180^FB{$width},1,0,C,0^A0N,20,20^FD" . $elements['additionalText'] . "^FS";
         }
 
         $zpl .= "^XZ"; // End of ZPL
