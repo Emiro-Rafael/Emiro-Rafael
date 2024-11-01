@@ -11,6 +11,7 @@
  */
 get_header();
 
+
 // ZPL Label Function 
 function generateLabelZPL($elements)
 {
@@ -222,19 +223,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Provide download link
     $file_url = $uploads_dir['url'] . '/' . $zpl_filename;
-    echo
-    "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var a = document.createElement('a');
-            a.href = '{$file_url}';
-            a.download = '{$zpl_filename}';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        });
-    </script>";
+    // echo
+    // "<script>
+    //     document.addEventListener('DOMContentLoaded', function() {
+    //         var a = document.createElement('a');
+    //         a.href = '{$file_url}';
+    //         a.download = '{$zpl_filename}';
+    //         a.style.display = 'none';
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         document.body.removeChild(a);
+    //     });
+    // </script>";
     // echo "<p>Your ZPL file is ready: <a href='{$file_url}' download>Download Label</a></p>";
+
+    require_once get_stylesheet_directory() . '/lib/zebra-print.class.php';
+    $zebraPrint = new ZebraPrint();
+    $printerId = sanitize_text_field($_POST['printerId']); // Example input for printer ID
+    $fileUrl = $file_url;
+
+    // Assuming your ZebraPrint class has a method like this
+    $result = $zebraPrint->sendFileToPrinter($printerId, $fileUrl);
+
+    if ($result) {
+        echo "Label sent to the printer successfully.";
+    } else {
+        echo "Failed to send label to the printer.";
+    }
 }
 
 
@@ -277,6 +292,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="mb-3">
                             <label for="additionalText" class="form-label">Additional Text</label>
                             <input type="text" class="form-control" id="additionalText" name="additionalText">
+                        </div>
+                        <div class="mb-3">
+                            <label for="printerId" class="form-label">Printer Id</label>
+                            <input type="text" class="form-control" id="printerId" name="printerId">
                         </div>
                         <button type="submit" class="btn btn-primary">Generate Label</button>
                     </form>
