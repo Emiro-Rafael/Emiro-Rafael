@@ -117,7 +117,7 @@ function generateLabelZPL($elements)
             $zpl .= "^FO$x_position,1000^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
 
             $width = 700; // Set the width you want for the text block
-            $zpl .= "^FO50,1180^FB{$width},1,0,C,0^A0N,20,20^FD" . $elements['additionalText'] . "^FS";
+            $zpl .= "^FO50,1180^FB{$width},1,0,C,0^A0N,28,28^FD" . $elements['additionalText'] . "^FS";
         }
 
         $zpl .= "^XZ"; // End of ZPL
