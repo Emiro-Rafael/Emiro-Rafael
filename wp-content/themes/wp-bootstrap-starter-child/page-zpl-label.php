@@ -15,7 +15,7 @@ get_header();
 function generateLabelZPL($elements)
 {
     $zpl_labels = [];
-    $max_lines_per_label = 12; // Adjust based on space availability for contents
+    $max_lines_per_label = 11; // Adjust based on space availability for contents
     $contents_chunks = array_chunk($elements['contents'], $max_lines_per_label);
     $total_pages = count($contents_chunks);
     $current_page = 1;
@@ -46,7 +46,7 @@ function generateLabelZPL($elements)
             $y_position = 220;
             foreach ($elements['address'] as $line) {
                 $zpl .= "^FO30,$y_position^A0N,24,24^FD" . $line . "^FS";
-                $y_position += 30; // Move down for the next line
+                $y_position += 25; // Move down for the next line
             }
 
             $zpl .= "^FO20,400^GB770,5,5^FS";
@@ -82,22 +82,48 @@ function generateLabelZPL($elements)
             // Construct the ZPL command with centered x-position
             // $y_position = 700;
             $y_position += 10;
-            $zpl .= "^FO272,$y_position^A0N,28,28^FD*** CUSTOM ORDER ***^FS";
-            $y_position += 30;
-            $zpl .= "^FO20," . $y_position + 35  . "^GB770,5,5^FS";
+            if (isset($elements['customOrderNote']) && !empty($elements['customOrderNote'])) {
+                $zpl .= "^FO272,$y_position^A0N,28,28^FD*** CUSTOM ORDER ***^FS";
+            }
 
+            $y_position += 35;
             // foreach (explode("\n", $elements['customOrderNote']) as $line) {
             // Check if 'customOrderNote' is set and not empty
             if (isset($elements['customOrderNote']) && !empty($elements['customOrderNote'])) {
+
+                $margin = 10; // Define the left and right margin
+
                 foreach ($elements['customOrderNote'] as $line) {
-                    $text_length = strlen($line);
-                    $character_width = 14;
-                    $text_width = $text_length * $character_width;
-                    $x_position = ($label_width - $text_width) / 2;
-                    $zpl .= "^FO$x_position,$y_position^A0N,28,28^FD" . $line . "^FS";
-                    $y_position += 25;
+                    $words = explode(' ', $line); // Split the line into words
+                    $current_line = '';
+
+                    foreach ($words as $word) {
+                        $current_line_with_word = (empty($current_line) ? '' : $current_line . ' ') . $word;
+                        $text_width = strlen($current_line_with_word) * $character_width;
+
+                        if ($text_width > ($label_width - 2 * $margin)) {
+                            // Print the current line if adding the next word exceeds label width (considering margins)
+                            $x_position = $margin + (($label_width - 2 * $margin - (strlen($current_line) * $character_width)) / 2);
+                            $zpl .= "^FO$x_position,$y_position^A0N,28,28^FD" . $current_line . "^FS";
+                            $y_position += 30;
+
+                            // Start a new line with the current word
+                            $current_line = $word;
+                        } else {
+                            $current_line = $current_line_with_word;
+                        }
+                    }
+
+                    // Print the remaining words in the line if any
+                    if (!empty($current_line)) {
+                        $x_position = $margin + (($label_width - 2 * $margin - (strlen($current_line) * $character_width)) / 2);
+                        $zpl .= "^FO$x_position,$y_position^A0N,28,28^FD" . $current_line . "^FS";
+                        $y_position += 25;
+                    }
                 }
             }
+
+            $zpl .= "^FO20," . $y_position + 12 . "^GB770,5,5^FS";
 
 
             $y_position += 40;
@@ -114,7 +140,7 @@ function generateLabelZPL($elements)
             $x_position = ($label_width - $barcode_width) / 2;
             $x_position = 90;
             // Construct ZPL for PDF417 barcode
-            $zpl .= "^FO$x_position,1000^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
+            $zpl .= "^FO$x_position,1015^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
 
             $width = 700; // Set the width you want for the text block
             $zpl .= "^FO50,1180^FB{$width},1,0,C,0^A0N,28,28^FD" . $elements['additionalText'] . "^FS";
