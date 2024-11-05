@@ -250,6 +250,7 @@ class WarehouseAjax extends SCAjax
                     if (isset($elements['customOrderNote']) && !empty($elements['customOrderNote'])) {
 
                         $margin = 10; // Define the left and right margin
+
                         foreach ($elements['customOrderNote'] as $line) {
                             $words = explode(' ', $line); // Split the line into words
                             $current_line = '';
@@ -281,18 +282,24 @@ class WarehouseAjax extends SCAjax
                     }
 
                     $zpl .= "^FO20," . $y_position + 12 . "^GB770,5,5^FS";
+
+
                     $y_position += 40;
+
                     // Assuming $label_width is defined correctly, e.g., 812 for 4-inch width at 203 DPI
                     $label_width = 310;
+
                     // Parameters for PDF417 barcode
                     $barcode_element_width = 7.5; // Adjust this to desired element width
                     $barcode_columns = 4; // Can be adjusted depending on data size and needs
                     $barcode_width = $barcode_columns * $barcode_element_width; // Estimate width
+
                     // Calculate X position for centering
                     $x_position = ($label_width - $barcode_width) / 2;
                     $x_position = 90;
                     // Construct ZPL for PDF417 barcode
                     $zpl .= "^FO$x_position,1015^B7N,$barcode_columns,$barcode_element_width^FD" . $elements['barcodeData'] . "^FS";
+
                     $width = 700; // Set the width you want for the text block
                     $zpl .= "^FO50,1180^FB{$width},1,0,C,0^A0N,28,28^FD" . $elements['additionalText'] . "^FS";
                 }
@@ -305,7 +312,10 @@ class WarehouseAjax extends SCAjax
             return implode("\n", $zpl_labels);
         }
 
+
+
         $order_id = $_POST['order_id'];
+
         $warehouse = new Warehouse();
         $order_info = $warehouse->getCustomerDataByOrderId($order_id);
         $customer_id = $order_info->user_id;
@@ -348,7 +358,8 @@ class WarehouseAjax extends SCAjax
 
         require_once get_stylesheet_directory() . '/lib/zebra-print.class.php';
         $zebraPrint = new ZebraPrint();
-        $printerId = sanitize_text_field($_POST['printerId']); // Example input for printer ID
+        // $printerId = sanitize_text_field($_POST['printerId']); // Example input for printer ID
+        $printerId = $_POST['printerId']; // Example input for printer ID
         $fileUrl = $file_url;
 
         // Assuming your ZebraPrint class has a method like this
@@ -358,7 +369,13 @@ class WarehouseAjax extends SCAjax
             // echo "Label sent to the printer successfully.";
             // echo "<script>alert('Label sent to the printer successfully.')</script>";
 
-            wp_send_json_success('Label sent to the printer successfully');
+            $message = sprintf(
+                'Label sent to the printer (%s) successfully ZPL URL = %s',
+                $printerId,
+                esc_url($fileUrl)
+            );
+
+            wp_send_json_success($message);
         } else {
             wp_send_json_error('Failed to send label to the printer.');
         }

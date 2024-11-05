@@ -1527,6 +1527,7 @@ function blocks() {
 
             function sendPrinterRequest(barcode) {
               resetInactivityTimer();
+
               var order_id = order.id;
               var address = order.name + '\n' + order.address_1 + '\n' + order.address_2;
 
@@ -1536,23 +1537,28 @@ function blocks() {
                 if (typeof item === 'object' && !item.item_name) {
                   Object.entries(item).forEach(([subKey, subItem]) => {
                     order_items += subItem.item_name + '\n'; // Append subItem item_name followed by a newline
-                    if (barcodeData == '') {
-                      barcodeData = barcode;
-                    }
+                    // if (barcodeData == '') {
+                    //   barcodeData = barcode;
+                    // }
                     
                   });
                 } else {
                   order_items += item.item_name + '\n'; // Append item_name followed by a newline for normal items
-                  if (barcodeData == '') {
-                      barcodeData = barcode;
-                    }
+                  // if (barcodeData == '') {
+                  //     barcodeData = barcode;
+                  //   }
                 }
               });
 
+              // var assemblyLine = 'CB LN1';
+              //var dataMatrix = '';
+              // var address = address;
               var contents = order_items;
+              //var customOrderNote = '';
+              // var barcodeData = barcodeData;
               var additionalText = 'ORDER: ' + order_id;
               var printerId = barcode;
-
+              alert(printerId);
               let formData = new FormData();
               let xhr = new XMLHttpRequest();
 
@@ -1560,8 +1566,9 @@ function blocks() {
               formData.append('order_id', order_id)
               formData.append('address', address)
               formData.append('contents', contents)
+              // formData.append('barcodeData', barcodeData)
               formData.append('additionalText', additionalText)
-              formData.append('printerId', barcode)
+              formData.append('printerId', printerId)
 
               xhr.open('post', '/wp-admin/admin-ajax.php');
               xhr.send(formData);
@@ -1583,7 +1590,13 @@ function blocks() {
                     // Error parsing the JSON or missing `success` field
                     alert("Error processing success response: " + error.message);
                 }
-                currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
+                
+                currentBarcodeInstance = waitForBarcode(false, function(nextBarcode) {
+                    sendPrinterRequest(nextBarcode);
+                });
+                            
+
+                // currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
               };
             }
 
@@ -1639,7 +1652,9 @@ function blocks() {
                 if (!activeItem.classList.contains('js-printing-step')) {
                   currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
                 } else {
-                  currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest);
+                  currentBarcodeInstance = waitForBarcode(false, function (barcode) {
+                          sendPrinterRequest(barcode);
+                      });
                 }
               } catch (error) {
                 console.error('Error in barcode processing:', error);
@@ -2054,8 +2069,8 @@ function blocks() {
                 sounds.incorrect.currentTime = 0
               })
             }
-          } else if (!isNaN(event.key)) {
-            newBarcode += event.key;
+          } else if ((/^[a-zA-Z0-9]$/).test(event.key)) {
+              newBarcode += event.key;
           }
         }
 
