@@ -1558,7 +1558,7 @@ function blocks() {
               // var barcodeData = barcodeData;
               var additionalText = 'ORDER: ' + order_id;
               var printerId = barcode;
-              alert(printerId);
+              // alert(printerId);
               let formData = new FormData();
               let xhr = new XMLHttpRequest();
 
