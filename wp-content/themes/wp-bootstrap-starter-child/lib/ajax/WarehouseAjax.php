@@ -243,7 +243,7 @@ class WarehouseAjax extends SCAjax
                     // Construct the ZPL command with centered x-position
                     // $y_position = 700;
                     $y_position += 10;
-                    if (isset($elements['customOrderNote']) && !empty($elements['customOrderNote'])) {
+                    if (!empty($elements['customOrderNote']) && !(count($elements['customOrderNote']) === 1 && $elements['customOrderNote'][0] === "")) {
                         $zpl .= "^FO272,$y_position^A0N,28,28^FD*** CUSTOM ORDER ***^FS";
                     }
 
@@ -328,21 +328,20 @@ class WarehouseAjax extends SCAjax
 
         $warehouse = new Warehouse();
         $order_info = $warehouse->getCustomerDataByOrderId($order_id);
-        $customer_id = $order_info->user_id;
+        $user_id = $order_info->user_id;
         $customization_notes = $order_info->customization_notes;
         $barcode_reference_db = $order_info->barcode_reference;
-
         $cus_is_guest = $order_info->is_guest;
 
-        $customer_info = $warehouse->getCustomerDataByUserId($customer_id);
+        // print_r($order_info);
 
-        if ($cus_is_guest == 0) {
-            $stripe_customer_id = $customer_info->customer_ID;
-            $customer_country = $customer_info->CountrySelection;
-        } else {
-            $stripe_customer_id = $customer_info->stripe_customer_id;
-            $customer_country = $customer_info->country;
-        }
+        $user_info = $warehouse->getCustomerDataByUserId($user_id);
+        $customer_id = $user_info->customer_ID;
+        $customer_info = $warehouse->getCustomerDataByCustomerID($customer_id);
+
+        $stripe_customer_id = $customer_info->customer_id;
+        $customer_country = $customer_info->country;
+
         // print_r($customer_info);
 
         if ($barcode_reference_db == '' || $barcode_reference_db == '1234') {

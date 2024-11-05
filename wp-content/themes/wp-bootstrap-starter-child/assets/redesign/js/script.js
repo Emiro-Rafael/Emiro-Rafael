@@ -1535,14 +1535,14 @@ function blocks() {
               Object.entries(order.items).forEach(([key, item]) => {
                 if (typeof item === 'object' && !item.item_name) {
                   Object.entries(item).forEach(([subKey, subItem]) => {
-                    order_items += subItem.item_name +' x ('+subItem.quantity + ') \n'; // Append subItem item_name followed by a newline
+                    order_items += subItem.quantity + ' x ' + subItem.item_name +'\n'; // Append subItem item_name followed by a newline
                     // if (barcodeData == '') {
                     //   barcodeData = barcode;
                     // }
                     
                   });
                 } else {
-                  order_items += item.item_name +' x ('+item.quantity + ') \n'; // Append item_name followed by a newline for normal items
+                  order_items += item.quantity + ' x ' + item.item_name +'\n'; // Append item_name followed by a newline for normal items
                   // if (barcodeData == '') {
                   //     barcodeData = barcode;
                   //   }
@@ -1573,22 +1573,22 @@ function blocks() {
               xhr.send(formData);
               xhr.onload = function() {
                 let data = xhr.responseText
-                // try { data = JSON.parse(data) } catch (error) { }
-                try {
-                    // Attempt to parse the response if it's JSON
-                    data = JSON.parse(data);
+                try { data = JSON.parse(data) } catch (error) { }
+                // try {
+                //     // Attempt to parse the response if it's JSON
+                //     data = JSON.parse(data);
 
-                    // Assume that a successful response structure includes a `success` field
-                    if (data.success) {
-                        alert("Success: " + data.data);
-                    } else {
-                        // Handle cases where the response does not indicate success
-                        alert("Error: An unexpected success response was received.");
-                    }
-                } catch (error) {
-                    // Error parsing the JSON or missing `success` field
-                    alert("Error processing success response: " + error.message);
-                }
+                //     // Assume that a successful response structure includes a `success` field
+                //     if (data.success) {
+                //         alert("Success: " + data.data);
+                //     } else {
+                //         // Handle cases where the response does not indicate success
+                //         alert("Error: An unexpected success response was received.");
+                //     }
+                // } catch (error) {
+                //     // Error parsing the JSON or missing `success` field
+                //     alert("Error processing success response: " + error.message);
+                // }
                 
                 currentBarcodeInstance = waitForBarcode(false, function(nextBarcode) {
                     sendPrinterRequest(nextBarcode);

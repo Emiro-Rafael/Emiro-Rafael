@@ -19,6 +19,7 @@ class Warehouse
     protected static $order_history_table = 'OrderHistory';
     private static $guest_user_table = 'guest_user';
     private static $user_table = 'Users';
+    private static $address_table = 'Address';
 
     public static $box_sizes = array(
         array(
@@ -1119,6 +1120,20 @@ class Warehouse
             return $user_data;
         }
         // Return the fetched data
+    }
+
+    public function getCustomerDataByCustomerID($customer_id)
+    {
+        // Prepare the SQL statement to fetch all customer data
+        $stmt = $this->dbh->prepare("SELECT * FROM " . self::$address_table . " WHERE customer_id = :customer_id");
+        $stmt->bindParam(":customer_id", $customer_id);
+        $stmt->execute();
+
+        // Fetching the customer data as an object
+        $customer_data = $stmt->fetch(PDO::FETCH_OBJ);
+
+        // Return the fetched data
+        return $customer_data;
     }
 
     public function updateBarcodeReference($order_id, $new_barcode_reference)
