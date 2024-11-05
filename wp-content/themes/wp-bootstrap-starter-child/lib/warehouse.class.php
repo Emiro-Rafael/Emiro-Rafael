@@ -1120,4 +1120,19 @@ class Warehouse
         }
         // Return the fetched data
     }
+
+    public function updateBarcodeReference($order_id, $new_barcode_reference)
+    {
+        $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET barcode_reference = :barcode_reference WHERE id = :id");
+
+        // Bind the parameters
+        $stmt->bindParam(":barcode_reference", $new_barcode_reference);
+        $stmt->bindParam(":id", $order_id);
+
+        // Execute the statement
+        $stmt->execute();
+
+        // Nullify the statement to free up resources
+        $stmt = null;
+    }
 }

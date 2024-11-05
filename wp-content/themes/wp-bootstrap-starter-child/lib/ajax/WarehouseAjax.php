@@ -220,6 +220,9 @@ class WarehouseAjax extends SCAjax
 
                 foreach ($contents_chunk as $content) {
                     $content = str_replace("–", "-", $content);
+                    $content = str_replace("-", "-", $content);
+                    $content = str_replace("&#8211;", "-", $content);
+                    $content = mb_convert_encoding($content, 'UTF-8', 'auto');
                     $zpl .= "^FO30,$y_position^A0N,20,26^FD" . $content . "^FS";
                     $y_position += 35;
                 }
@@ -282,8 +285,6 @@ class WarehouseAjax extends SCAjax
                     }
 
                     $zpl .= "^FO20," . $y_position + 12 . "^GB770,5,5^FS";
-
-
                     $y_position += 40;
 
                     // Assuming $label_width is defined correctly, e.g., 812 for 4-inch width at 203 DPI
@@ -313,20 +314,68 @@ class WarehouseAjax extends SCAjax
         }
 
 
+        $order_ids = $_POST['order_id'];
+        $order_id_array = [];
 
-        $order_id = $_POST['order_id'];
+        if (strpos($order_ids, ',') !== false) {
+            $order_id_array = explode(',', $order_ids);
+            $order_id = $order_id_array[0];
+        } else {
+            $order_id = $order_ids;
+        }
+
+        // print_r($order_id_array);
 
         $warehouse = new Warehouse();
         $order_info = $warehouse->getCustomerDataByOrderId($order_id);
         $customer_id = $order_info->user_id;
         $customization_notes = $order_info->customization_notes;
-        $barcode_reference = $order_info->barcode_reference;
+        $barcode_reference_db = $order_info->barcode_reference;
+
+        $cus_is_guest = $order_info->is_guest;
 
         $customer_info = $warehouse->getCustomerDataByUserId($customer_id);
-        $stripe_customer_id = $customer_info->customer_info;
-        // print_r($order_info);
 
-        $address = $_POST['address'];
+        if ($cus_is_guest == 0) {
+            $stripe_customer_id = $customer_info->customer_ID;
+            $customer_country = $customer_info->CountrySelection;
+        } else {
+            $stripe_customer_id = $customer_info->stripe_customer_id;
+            $customer_country = $customer_info->country;
+        }
+        // print_r($customer_info);
+
+        if ($barcode_reference_db == '' || $barcode_reference_db == '1234') {
+
+            function generateUnique8DigitNumber()
+            {
+                // Generate a random 5-digit number
+                $randomPart = random_int(10000, 99999);
+                // Use the current time (in seconds) for another part
+                $timePart = time() % 1000; // Get last 3 digits of the current time
+                // Combine both parts to form an 8-digit number
+                $uniqueNumber = (string)$randomPart . str_pad($timePart, 3, '0', STR_PAD_LEFT);
+                return (int)$uniqueNumber;
+            }
+            $new_barcode_reference = generateUnique8DigitNumber();
+            // $new_barcode_reference = '43154752';
+
+            if (empty($order_id_array) || (count($order_id_array) === 1 && $order_id_array[0] === "")) {
+                $warehouse->updateBarcodeReference($order_id, $new_barcode_reference);
+            } else {
+                foreach ($order_id_array as $single_order_id) {
+                    $single_order_id = trim($single_order_id);  // Trim any whitespace
+                    $warehouse->updateBarcodeReference($single_order_id, $new_barcode_reference);
+                }
+            }
+
+            $barcode_reference = $new_barcode_reference;
+        } else {
+            $barcode_reference = $barcode_reference_db;
+        }
+        //echo $barcode_reference;
+
+        $address = $_POST['address'] . '\n' . $customer_country;
         $address_input = filter_input(INPUT_POST, 'address', FILTER_SANITIZE_STRING);
         $address_input = str_replace("\\n", "\n", $address);
         $address_input = trim($address_input);
@@ -338,14 +387,14 @@ class WarehouseAjax extends SCAjax
             'dataMatrix' => $stripe_customer_id,
             'address' => $address_lines,
             'contents' => explode("\n", trim($_POST['contents'])),
-            'customOrderNote' => $customization_notes,
+            'customOrderNote' => explode("\n", $customization_notes),
             'barcodeData' => $barcode_reference,
             'additionalText' => $_POST['additionalText']
         ];
 
         $zpl_string = generateLabelZPL($elements);
 
-        // echo $zpl_string;
+        // $zpl_string;
 
         // File path for saving ZPL
         $uploads_dir = wp_upload_dir();

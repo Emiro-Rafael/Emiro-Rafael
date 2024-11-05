@@ -1530,20 +1530,19 @@ function blocks() {
 
               var order_id = order.id;
               var address = order.name + '\n' + order.address_1 + '\n' + order.address_2;
-
               var barcodeData = '';
               var order_items = '';
               Object.entries(order.items).forEach(([key, item]) => {
                 if (typeof item === 'object' && !item.item_name) {
                   Object.entries(item).forEach(([subKey, subItem]) => {
-                    order_items += subItem.item_name + '\n'; // Append subItem item_name followed by a newline
+                    order_items += subItem.item_name +' x ('+subItem.quantity + ') \n'; // Append subItem item_name followed by a newline
                     // if (barcodeData == '') {
                     //   barcodeData = barcode;
                     // }
                     
                   });
                 } else {
-                  order_items += item.item_name + '\n'; // Append item_name followed by a newline for normal items
+                  order_items += item.item_name +' x ('+item.quantity + ') \n'; // Append item_name followed by a newline for normal items
                   // if (barcodeData == '') {
                   //     barcodeData = barcode;
                   //   }
