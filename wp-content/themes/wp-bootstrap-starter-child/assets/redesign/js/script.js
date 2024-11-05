@@ -1527,19 +1527,62 @@ function blocks() {
 
             function sendPrinterRequest(barcode) {
               resetInactivityTimer();
+              var order_id = order.id;
+              var address = order.name + '\n' + order.address_1 + '\n' + order.address_2;
+
+              var barcodeData = '';
+              var order_items = '';
+              Object.entries(order.items).forEach(([key, item]) => {
+                if (typeof item === 'object' && !item.item_name) {
+                  Object.entries(item).forEach(([subKey, subItem]) => {
+                    order_items += subItem.item_name + '\n'; // Append subItem item_name followed by a newline
+                    if (barcodeData == '') {
+                      barcodeData = barcode;
+                    }
+                    
+                  });
+                } else {
+                  order_items += item.item_name + '\n'; // Append item_name followed by a newline for normal items
+                  if (barcodeData == '') {
+                      barcodeData = barcode;
+                    }
+                }
+              });
+
+              var contents = order_items;
+              var additionalText = 'ORDER: ' + order_id;
+              var printerId = barcode;
+
               let formData = new FormData();
               let xhr = new XMLHttpRequest();
 
               formData.append('action', 'send_print_request')
-              formData.append('order_id', order.id)
-              formData.append('printer_barcode', barcode)
+              formData.append('order_id', order_id)
+              formData.append('address', address)
+              formData.append('contents', contents)
+              formData.append('additionalText', additionalText)
+              formData.append('printerId', barcode)
 
               xhr.open('post', '/wp-admin/admin-ajax.php');
               xhr.send(formData);
               xhr.onload = function() {
                 let data = xhr.responseText
-                try { data = JSON.parse(data) } catch (error) {}
+                // try { data = JSON.parse(data) } catch (error) { }
+                try {
+                    // Attempt to parse the response if it's JSON
+                    data = JSON.parse(data);
 
+                    // Assume that a successful response structure includes a `success` field
+                    if (data.success) {
+                        alert("Success: " + data.data);
+                    } else {
+                        // Handle cases where the response does not indicate success
+                        alert("Error: An unexpected success response was received.");
+                    }
+                } catch (error) {
+                    // Error parsing the JSON or missing `success` field
+                    alert("Error processing success response: " + error.message);
+                }
                 currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
               };
             }
