@@ -1534,7 +1534,7 @@ body.s-menu-open {
 .input.input--round input, .input.input--round select, .input.input--round textarea, .input.input--round .input__card, .input.input--round .output_text {
     padding-top: 0.9375rem;
     padding-bottom: 1rem;
-    font-size: max(0.875rem, 12px);
+    font-size: max(0.875rem, 12px) !important;
     font-style: normal;
     font-weight: 500;
     border-radius: 1.625rem;
