@@ -175,6 +175,124 @@ if(typeof fadeToggle === 'undefined') {
     }
   }
 }
+if(typeof animateHeight === 'undefined') {
+  function animateHeight(element, duration, startHeight, targetHeight, onComplete) {
+    let elStyles = window.getComputedStyle(element)
+    let paddingTop = elStyles.paddingTop.replace('px', '')
+    let paddingBottom = elStyles.paddingBottom.replace('px', '')
+    if (!startHeight) {
+      startHeight = element.clientHeight
+    }
+    let currentHeight = startHeight;
+
+
+    element.style.transition = '';
+
+    if (targetHeight) {
+      if (paddingTop) {
+        startHeight -= paddingTop
+        element.style.paddingTop = '0'
+        setTimeout(function () {
+          element.style.transition = `padding ${duration}ms linear`
+          element.style.paddingTop = paddingTop + 'px'
+        }, 10)
+      }
+      if (paddingBottom) {
+        startHeight -= paddingBottom
+        element.style.paddingBottom = '0px'
+        setTimeout(function () {
+          element.style.transition = `padding ${duration}ms linear`
+          element.style.paddingBottom = paddingBottom + 'px'
+        }, 10)
+      }
+      currentHeight = startHeight
+    } else {
+      if (paddingTop) {
+        element.style.transition = `padding ${duration}ms linear`
+        element.style.paddingTop = '0px'
+      }
+      if (paddingBottom) {
+        element.style.transition = `padding ${duration}ms linear`
+        element.style.paddingBottom = '0px'
+      }
+    }
+    if ((startHeight / targetHeight) !== Infinity) {
+      duration = duration - (duration * (startHeight / targetHeight))
+    }
+
+    if (element.animation && element.animation.stop) {
+      element.animation.stop();
+    }
+
+    function updateHeight() {
+      const elapsedTime = performance.now() - startTime;
+      const progress = Math.min(1, elapsedTime / duration);
+      currentHeight = startHeight + progress * (targetHeight - startHeight);
+      element.style.height = currentHeight.toFixed(2) + 'px';
+
+      if (progress < 1) {
+        element.animation.raf = requestAnimationFrame(updateHeight);
+      } else {
+        element.style.height = '';
+        element.style.paddingTop = '';
+        element.style.paddingBottom = '';
+        element.style.overflow = '';
+        element.style.transition = '';
+        element.animation = false;
+        if (!targetHeight) {
+          element.style.display = 'none'
+        }
+        if (onComplete) {
+          onComplete();
+        }
+      }
+    }
+
+    function stopAnimation() {
+      cancelAnimationFrame(element.animation.raf);
+    }
+
+    const startTime = performance.now();
+    element.animation = {
+      raf: 0,
+      type: targetHeight > startHeight ? 'slideDown' : 'slideUp',
+      stop: stopAnimation,
+    };
+    updateHeight();
+  }
+}
+if(typeof slideDown === 'undefined') {
+  function slideDown(element, duration, display = 'block', onComplete) {
+    let startHeight = element.clientHeight;
+    element.style.display = display;
+    element.style.height = 'unset'
+    const targetHeight = element.clientHeight;
+    element.style.height = '0px';
+    element.style.overflow = 'hidden';
+
+    console.log(targetHeight, display)
+
+    animateHeight(element, duration, startHeight, targetHeight, onComplete);
+  }
+}
+if(typeof slideUp === 'undefined') {
+  function slideUp(element, duration, onComplete) {
+    const targetHeight = 0;
+    element.style.overflow = 'hidden';
+
+    animateHeight(element, duration, false, targetHeight, onComplete);
+  }
+}
+if(typeof slideToggle === 'undefined') {
+  function slideToggle(target, duration, display = 'block', afterFunction) {
+    console.log(!target.animation && window.getComputedStyle(target).display === 'none')
+    if ((target.animation && target.animation.type === 'slideUp') || (!target.animation && window.getComputedStyle(target).display === 'none')) {
+      return slideDown(target, duration, display, afterFunction);
+    } else {
+      return slideUp(target, duration, afterFunction);
+    }
+  }
+}
 
 function validate(form, newOpts = {}) {
   if(!hasPluginRequirements('validate', ['printf', 'selectAll'])){
@@ -1005,6 +1123,11 @@ function fadingPages(context, opts) {
     show: showPage
   }
 }
+function escapeHtml(unsafeText) {
+  const div = document.createElement('div');
+  div.textContent = unsafeText;
+  return div.innerHTML;
+}
 
 function blocks() {
   let methods = {
@@ -1146,19 +1269,103 @@ function blocks() {
         validate(form, validationOpts)
       })
     },
+    '.s-menu': function (menu){
+      menu = menu[0]
+      let menuBtn = document.querySelector('.header__burger')
+
+      menuBtn.addEventListener('click', function () {
+        console.log(menu)
+        slideToggle(menu, 300)
+        document.body.classList.toggle('s-menu-open')
+      })
+      menu.querySelectorAll('a').forEach(item=>item.addEventListener('click', function () {
+        slideUp(menu, 300)
+        document.body.classList.remove('s-menu-open')
+      }))
+    },
     '.warehouse': function (sections) {
       let section = sections[0]
       let barcodeInput = document.getElementById('barcode-input');
       let currentBarcodeInstance;
       let sounds = {
         attention: new Audio(template_path+'/assets/redesign/audio/attention.wav'),
+        attention_2: new Audio(template_path+'/assets/redesign/audio/attention_2.wav'),
         incorrect: new Audio(template_path+'/assets/redesign/audio/incorrect.wav'),
       }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      async function apiRequest(action, query, errorMsg = '') {
+        try {
+          const body = new FormData();
+          body.append('action', action);
+      
+          Object.entries(query).forEach(([key, value]) => {
+            if (value instanceof File) {
+              // This is a File object, so just append it directly
+              body.append(key, value);
+            } else if (typeof value === "object") {
+              // This is another type of object, so stringify it
+              body.append(key, JSON.stringify(value));
+            } else {
+              // This is a simple value, so append it as is
+              body.append(key, value);
+            }
+          });
+      
+          const response = await fetch('/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body,
+          });
+
+          if (!response.ok) {
+            throw new Error('Server Error.');
+          }
+          let data = await response.json();
+      
+          if(data.status === 0) throw new Error(data.data ? data.data : 'Api Error.');
+      
+          return data.data;
+        } catch (error) {
+          console.log('apiRequest error', error.message);		
+          return {error: error.message ? error.message : errorMsg, status: error.status};
+        }
+      }
+
+
       let pagesCallbacks = {
         'pick': function (pickPage) {
           let modals = {
             'queue': document.getElementById('warehouse-pick-queue'),
             'quantity': document.getElementById('warehouse-pick-quantity'),
+            'boxsize': document.getElementById('warehouse-pick-box-size'),
+            'customization': document.getElementById('warehouse-pick-customization'),
             'barcode': document.getElementById('warehouse-pick-barcode'),
           }
 
@@ -1216,40 +1423,99 @@ function blocks() {
               }
             };
           }
-          function showPickIncorrectBarcode(tryAgainFunction = ()=>{}) {
-            Fancybox.show([{
-              src: '#'+modals.barcode.id,
-              type: 'inline',
-              placeFocusBack: false,
-              trapFocus: false,
-              autoFocus: false,
-            }], {
-              dragToClose: false,
-              on: {
-                "destroy": (event, fancybox, slide) => {
-                  tryAgainFunction()
-                },
-              }
-            });
+          async function showOrdersBundleBoxSize(order) {
+            let size_data = false;
+    
+            if (order.box_size_data?.length) {
+              size_data = order.box_size_data;
+            } else {
+              size_data = await apiRequest('calc_orders_bundle_box_size', {'orders_bundle_data': order});
+            }
+    
+            if(!size_data) return false;
+    
+            return showBoxDimensionPopup(`<dl>
+              <dt>Box: </dt> <dd>${size_data.suitable_box || 'No suitable box found'}</dd>
+              <dt>Weight:</dt> <dd>${size_data.total_weight} oz</dd>
+              <dt>Volume: </dt> <dd>${size_data.total_volume} in³</dd>
+              <dt>Max dimension:</dt> <dd>${size_data.max_dimension} in</dd>
+            </dl>`);
           }
-          function showPickQuantityPopup(quantity = 2, afterFunction = ()=>{}) {
-            modals.quantity.querySelector('.js-pick-quantity').innerHTML = 'x<span>'+quantity+'</span>'
-
-            Fancybox.show([{
-              src: '#'+modals.quantity.id,
-              type: 'inline',
-              placeFocusBack: false,
-              trapFocus: false,
-              autoFocus: false,
-            }], {
-              dragToClose: false,
-              on: {
-                "destroy": (event, fancybox, slide) => {
-                  afterFunction()
-                },
-              }
+          const showPickIncorrectBarcode = () => {
+            return new Promise((resolve) => {
+              Fancybox.show([{
+                src: '#' + modals.barcode.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
             });
-          }
+          };
+          const showBoxDimensionPopup = (html) => {
+            return new Promise((resolve) => {
+              const quantityElement = modals.boxsize.querySelector('.js-pick-box-size');
+              quantityElement.style.fontSize = '18px';
+              quantityElement.style.textAlign = 'center'; 
+              quantityElement.innerHTML = html;
+          
+              Fancybox.show([{
+                src: '#' + modals.boxsize.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
+            });
+          };
+          const showPickQuantityPopup = (quantity = 2) => {
+            return new Promise((resolve) => {
+              const quantityElement = modals.quantity.querySelector('.js-pick-quantity');
+              quantityElement.innerHTML = `x<span>${quantity}</span>`;
+          
+              Fancybox.show([{
+                src: '#' + modals.quantity.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
+            });
+          };
+          const showPickCustomizationPopup = (text = '') => {
+            return new Promise((resolve) => {
+              const customizationElement = modals.customization.querySelector('.js-pick-customization');
+              customizationElement.textContent = text;
+          
+              Fancybox.show([{
+                src: '#' + modals.customization.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
+            });
+          };
 
           function startPick(order) {
             let activeItem
@@ -1258,6 +1524,7 @@ function blocks() {
             pickPage.insertAdjacentHTML('beforeend', `
             <div class="warehouse__pick" data-order-id="${order.id}">
               <div class="warehouse__pick-info">
+                <input type="hidden" id="label_url" value="">
                 <p><strong>Order #${order.id}</strong></p>
                 <p>${order.name}</p>
                 <p>${order.address_1}</p>
@@ -1267,7 +1534,7 @@ function blocks() {
               ${Object.entries(order.items).map(([key, item], index) => {
                 if (typeof item === 'object' && !item.item_name) {
                   return Object.entries(item).map(([subKey, subItem], subIndex) => `
-                    <div class="warehouse__pick-item" data-barcode="${subItem.barcode}" data-quantity="${subItem.quantity}" ${index === 0 && subIndex === 0 ? 'style="display: block"' : ''}>
+                    <div class="warehouse__pick-item" data-barcode="${subItem.barcode}" data-quantity="${subItem.quantity}" data-customization="${escapeHtml(subItem.customization)}" ${index === 0 && subIndex === 0 ? 'style="display: block"' : ''}>
                       <div class="warehouse__pick-title">
                         <span>Item ${counter++} of ${order.total_items}</span>
                       </div>
@@ -1288,7 +1555,7 @@ function blocks() {
                 }
                 // For normal items
                 return `
-                  <div class="warehouse__pick-item" data-barcode="${item.barcode}" data-quantity="${item.quantity}" ${index === 0 ? 'style="display: block"' : ''}>
+                  <div class="warehouse__pick-item" data-barcode="${item.barcode}" data-quantity="${item.quantity}" data-customization="${escapeHtml(item.customization)}" ${index === 0 ? 'style="display: block"' : ''}>
                     <div class="warehouse__pick-title">
                       <span>Item ${counter++} of ${order.total_items}</span>
                     </div>
@@ -1384,49 +1651,69 @@ function blocks() {
                 currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
               };
             }
-            function onBarcodeInput(isCorrect) {
-              resetInactivityTimer();
 
-              if(isCorrect){
-                let nextItem = pickPage.querySelector('.warehouse__pick-item.is-active + .warehouse__pick-item')
+            const playSound = async (sound) => {
+              await sound.play();
+              sound.currentTime = 0;
+            };
+            
+            const processNextItem = async (activeItem, nextItem) => {
+              activeItem.classList.remove('is-active');
+              nextItem.classList.add('is-active');
 
-                function continueNext() {
-                  activeItem.classList.remove('is-active')
-                  nextItem.classList.add('is-active')
-
-                  fadeOut(activeItem, 300, function () {
-                    fadeIn(nextItem, 300)
-                  })
-
-                  activeItem = nextItem
-                  if(!activeItem.classList.contains('js-printing-step')){
-                    currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
-                  } else {
-                    currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
-                  }
-                }
-
-                if(nextItem) {
-                  if(activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1){
-                    sounds.attention.play().then(r => {
-                      sounds.attention.currentTime = 0
-                    })
-                    showPickQuantityPopup(activeItem.dataset.quantity, function () {
-                      continueNext()
-                    })
-                  } else {
-                    continueNext()
-                  }
-                }
-              } else {
-                showPickIncorrectBarcode(function () {
-                  currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
-                })
+              fadeOut(activeItem, 300, function () {
+                fadeIn(nextItem, 300)
+              })
+            
+              return nextItem;
+            };
+            
+            const handleCustomization = async (activeItem) => {
+              if (activeItem.dataset.customization) {
+                await playSound(sounds.attention_2);
+                await showPickCustomizationPopup(activeItem.dataset.customization);
               }
-            }
-
+            };
+            
+            const onBarcodeInput = async (isCorrect) => {
+              resetInactivityTimer();
+            
+              if (!isCorrect) {
+                await showPickIncorrectBarcode();
+                currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
+                return;
+              }
+            
+              const nextItem = pickPage.querySelector('.warehouse__pick-item.is-active + .warehouse__pick-item');
+              if (!nextItem) return;
+            
+              try {
+                // Handle quantity check
+                if (activeItem.dataset.quantity && parseInt(activeItem.dataset.quantity) > 1) {
+                  await playSound(sounds.attention);
+                  await showPickQuantityPopup(activeItem.dataset.quantity);
+                }
+            
+                // Handle customization
+                await handleCustomization(activeItem);
+            
+                // Process next item
+                activeItem = await processNextItem(activeItem, nextItem);
+            
+                // Set up next barcode listener
+                if (!activeItem.classList.contains('js-printing-step')) {
+                  currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
+                } else {
+                  currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest);
+                }
+              } catch (error) {
+                console.error('Error in barcode processing:', error);
+                // Handle error appropriately
+              }
+            };
+            
             resetInactivityTimer();
-            currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput)
+            currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
           }
 
           if(typeof warehouse_active_pick_order === 'object' && warehouse_active_pick_order.id){
@@ -1435,6 +1722,29 @@ function blocks() {
             if(existingEl && existingEl.dataset.orderId == warehouse_active_pick_order.id){
               return;
             }
+            if((issues = checkBarcodes(warehouse_active_pick_order)).length) {
+              alert('We cant proceed due to the issue: \n' + issues.join('\n'));
+              if(warehouse_active_pick_order.id) aborPicking(warehouse_active_pick_order.id, (xhr) => {
+                let data = xhr.responseText
+                try { data = JSON.parse(data) } catch (error) {}
+                if (xhr.status === 200) {
+                  clearTimeout(inactivityTimeout);
+                  let existingEl = pickPage.querySelector('.warehouse__pick')
+  
+                  if(existingEl){
+                    existingEl.remove()
+                  }
+                  if(currentBarcodeInstance){
+                    currentBarcodeInstance.destroy()
+                  }
+  
+                  warehouse_active_pick_order = {}
+                  pagesInstance.show('main')
+                }
+              });
+              return;
+            } 
+              
             startPick(warehouse_active_pick_order)
           } else {
             showPickQueuePopup()
@@ -1445,6 +1755,59 @@ function blocks() {
           } else {
             pickPage.initted = true
           }
+
+          function aborPicking(order_id, cb) {
+            let formData = new FormData();
+            let xhr = new XMLHttpRequest();
+
+            formData.append('action', 'return_order_to_queue')
+            formData.append('order_id', order_id)
+
+            xhr.open('post', '/wp-admin/admin-ajax.php');
+            xhr.send(formData);
+            xhr.onload = function() {
+              if (cb) cb(xhr);
+            }
+          }
+
+          function checkBarcodes(order) {
+            const issues = [];
+            const requiredParams = ['height', 'length', 'width', 'weight'];
+        
+            Object.entries(order.items).forEach(([itemId, item]) => {
+                if (itemId.startsWith('country-')) {
+                    Object.values(item).forEach(subItem => {
+                        checkItem(subItem, itemId, order.id);
+                    });
+                } else {
+                    checkItem(item, itemId, order.id);
+                }
+            });
+        
+            function checkItem(item, itemId, orderId) {
+                // Check barcode and image
+                if (!item.barcode) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing barcode`);
+                }
+                if (!item.img) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing image`);
+                }
+                
+                // Check parameters
+                if (!item.parameters) {
+                    issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing parameters`);
+                    return;
+                }
+        
+                requiredParams.forEach(param => {
+                    if (!item.parameters[param]?.value) {
+                        issues.push(`Order ${orderId}, Item ${itemId}: ${item.item_name} - Missing ${param}`);
+                    }
+                });
+            }
+        
+            return issues;
+        }
 
           dynamicListener('click', '.js-pick-start', function (e) {
             e.preventDefault()
@@ -1463,16 +1826,45 @@ function blocks() {
               let data = xhr.responseText
               try { data = JSON.parse(data) } catch (error) {}
               if (xhr.status === 200) {
+
                 modals.queue.classList.add('can-close')
                 Fancybox.close()
                 btn.removeAttribute('disabled')
+
+                if((issues = checkBarcodes(data.data)).length) {
+                  alert('We cant proceed due to the issue: \n' + issues.join('\n'));
+                  if(data.data.id) aborPicking(data.data.id, (xhr) => {
+                    let data = xhr.responseText
+                    try { data = JSON.parse(data) } catch (error) {}
+                    if (xhr.status === 200) {
+                      clearTimeout(inactivityTimeout);
+                      let existingEl = pickPage.querySelector('.warehouse__pick')
+      
+                      if(existingEl){
+                        existingEl.remove()
+                      }
+                      if(currentBarcodeInstance){
+                        currentBarcodeInstance.destroy()
+                      }
+      
+                      warehouse_active_pick_order = {}
+                      pagesInstance.show('main')
+                    }
+                  });
+                  return;
+                } 
+
                 startPick(data.data)
                 warehouse_active_pick_order = data.data
               }
             };
           })
-          dynamicListener('click', '.js-pick-complete', function (e) {
+
+          dynamicListener('click', '.js-pick-complete', async function (e) {
             e.preventDefault()
+            
+            // await showOrdersBundleBoxSize(warehouse_active_pick_order);
+
             let btn = this
             let orderId = btn.closest('[data-order-id]').dataset.orderId
             let formData = new FormData();
@@ -1505,40 +1897,31 @@ function blocks() {
               btn.removeAttribute('disabled')
             };
           })
-          dynamicListener('click', '.js-pick-return', function (e) {
+          dynamicListener('click', '.js-pick-return', function (e) {            
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
-            let formData = new FormData();
-            let xhr = new XMLHttpRequest();
-
             btn.setAttribute('disabled', 'disabled')
-
-            formData.append('action', 'return_order_to_queue')
-            formData.append('order_id', orderId)
-
-            xhr.open('post', '/wp-admin/admin-ajax.php');
-            xhr.send(formData);
-            xhr.onload = function() {
-              let data = xhr.responseText
-              try { data = JSON.parse(data) } catch (error) {}
-              if (xhr.status === 200) {
-                clearTimeout(inactivityTimeout);
-                let existingEl = pickPage.querySelector('.warehouse__pick')
-
-                if(existingEl){
-                  existingEl.remove()
+            let orderId = btn.closest('[data-order-id]').dataset.orderId;
+            aborPicking(orderId, (xhr) => {
+                let data = xhr.responseText
+                try { data = JSON.parse(data) } catch (error) {}
+                if (xhr.status === 200) {
+                  clearTimeout(inactivityTimeout);
+                  let existingEl = pickPage.querySelector('.warehouse__pick')
+  
+                  if(existingEl){
+                    existingEl.remove()
+                  }
+                  if(currentBarcodeInstance){
+                    currentBarcodeInstance.destroy()
+                  }
+  
+                  warehouse_active_pick_order = {}
+                  pagesInstance.show('main')
                 }
-                if(currentBarcodeInstance){
-                  currentBarcodeInstance.destroy()
-                }
-
-                warehouse_active_pick_order = {}
-                pagesInstance.show('main')
-              }
-
-              btn.removeAttribute('disabled')
-            };
+  
+                btn.removeAttribute('disabled')
+            });
           })
         },
         'pack': function (packPage) {
@@ -1566,6 +1949,10 @@ function blocks() {
             } else {
               errorText.style.display = 'none'
             }
+
+            sounds.incorrect.play().then(r => {
+              sounds.incorrect.currentTime = 0
+            })
 
             Fancybox.show([{
               src: '#'+modals.error.id,
@@ -1596,22 +1983,34 @@ function blocks() {
               fadeIn(packBlock, 300)
             })
 
-            packBlock.classList.remove('small', 'medium', 'large', 'xl', 'lil-brown', 'big-brown')
-            packBlock.classList.add(order.box_size)
+            packBlock.classList.remove('small', 'medium', 'large', 'xtra_large', 'lil_brown', 'big_brown')
+            if(order.box_size){
+              let box_size = JSON.parse(order.box_size);
+              packBlock.classList.add(box_size.suitable_box);
+            }
 
             packBlock.dataset.orderId = order.id
+            packBlock.dataset.orderIds = order.order_ids.join(',')
+
+            let ordersString = '#' + order.order_ids.join(', #');
 
             infoEl.innerHTML = `
-              <p><strong>Order #${order.id}</strong></p>
+              <input type="hidden" id="label_url" value="${order.label_url}">
+              <p><strong>Order ${ordersString}</strong></p>
               <p>${order.name}</p>
               <p>${order.address_1}</p>
               <p>${order.address_2}</p>
+              <p>${order.city}, ${order.state} ${order.zipcode}</p>
+              <p>${order.country}</p>
             `;
           }
 
           function onBarcodeInput(barcode) {
             let formData = new FormData();
             let xhr = new XMLHttpRequest();
+            let packPage = $(".warehouse__page[data-page='pack']")[0];
+
+            $("#label_url").val();
 
             packPage.classList.add('is-loading')
 
@@ -1626,6 +2025,10 @@ function blocks() {
               if (xhr.status === 200) {
                 startPack(data.data)
                 warehouse_active_pack_order = data.data
+
+                if(data.data.label_url){
+                  sendLabelPrintCommand(data.data.label_url);
+                }
               } else {
                 showPackError(data.data, function () {
                   currentBarcodeInstance = waitForBarcode(false, onBarcodeInput)
@@ -1657,38 +2060,50 @@ function blocks() {
           dynamicListener('click', '.js-pack-reprint', function (e) {
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
-            let formData = new FormData();
-            let xhr = new XMLHttpRequest();
+            let label_url = $("#label_url").val();
+            let packPage = $(".warehouse__page[data-page='pack']")[0];
 
+            if(!label_url){
+              showPackError({text: "Label file not found", title: "Error printing label"});
+              return;
+            }
+
+            packPage.classList.add('is-loading')
             btn.setAttribute('disabled', 'disabled')
 
-            formData.append('action', 'send_print_pack_request')
-            formData.append('order_id', orderId)
+            let xhr = new XMLHttpRequest();
+            let formData = new FormData();
+
+            formData.append('action', 'print_label')
+            formData.append('printerId', 'T3J243201304')
+            formData.append('fileUrl', label_url)
 
             xhr.open('post', '/wp-admin/admin-ajax.php');
             xhr.send(formData);
             xhr.onload = function() {
               let data = xhr.responseText
               try { data = JSON.parse(data) } catch (error) {}
-
-              if(xhr.status !== 200){
+              if (xhr.status !== 200) {
                 showPackError(data.data)
               }
               btn.removeAttribute('disabled')
+              packPage.classList.remove('is-loading')
             };
           })
+
           dynamicListener('click', '.js-pack-complete', function (e) {
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
+            let orderIds = btn.closest('[data-order-ids]').dataset.orderIds
             let formData = new FormData();
             let xhr = new XMLHttpRequest();
+
+            orderIds = orderIds.split(',');
 
             btn.setAttribute('disabled', 'disabled')
 
             formData.append('action', 'complete_pack_order')
-            formData.append('order_id', orderId)
+            formData.append('order_ids', orderIds)
 
             xhr.open('post', '/wp-admin/admin-ajax.php');
             xhr.send(formData);
@@ -1705,6 +2120,30 @@ function blocks() {
             };
           })
         },
+      }
+
+      async function sendLabelPrintCommand(label_url)
+      {
+        let xhr = new XMLHttpRequest();
+        let formData = new FormData();
+        let packPage = $(".warehouse__page[data-page='pack']")[0];
+
+        formData.append('action', 'print_label')
+        formData.append('printerId', 'T3J243201304')
+        formData.append('fileUrl', label_url)
+
+        xhr.open('post', '/wp-admin/admin-ajax.php');
+        xhr.send(formData);
+        xhr.onload = function() {
+          let data = xhr.responseText
+          try { data = JSON.parse(data) } catch (error) {}
+          if (xhr.status === 200) {
+            packPage.classList.remove('is-loading')
+          } else {
+            showPackError(data.data)
+          }
+          packPage.classList.remove('is-loading')
+        };
       }
 
       function waitForBarcode(barcode=false, afterFunction=()=>{}) {
@@ -1751,7 +2190,6 @@ function blocks() {
       }
 
       section.addEventListener('show', function (e) {
-        console.log(currentBarcodeInstance)
         if(typeof pagesCallbacks[e.target.dataset.page] === 'function'){
           pagesCallbacks[e.target.dataset.page](e.target)
         }

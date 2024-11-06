@@ -7,6 +7,11 @@ global $hide_footer;
 $is_redesign_page = true;
 $hide_footer = true;
 
+if(isset($_GET['logout'])){
+    unset($_COOKIE['warehouse_id']);
+    unset($_GET['logout']);
+}
+
 $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
 
 $template_path = get_stylesheet_directory_uri();
@@ -58,7 +63,7 @@ get_header();
         <div class="container">
             <div class="warehouse__page" data-page="main">
                 <div class="warehouse__title">
-                    <h1>Welcome, <?= $user->display_name ?>!</h1>
+                    <h1>Welcome, <?= $user->first_name ?: $user->display_name ?>!</h1>
                 </div>
                 <div class="warehouse__btns">
                     <button type="button" class="btn" data-page-link="pick">POWER PICK</button>
@@ -93,13 +98,14 @@ get_header();
                             <img src="<?=$template_path?>/assets/images/ico-box-small.svg" class="warehouse__pack-img small" alt="SMALL">
                             <img src="<?=$template_path?>/assets/images/ico-box-medium.svg" class="warehouse__pack-img medium" alt="MEDIUM">
                             <img src="<?=$template_path?>/assets/images/ico-box-large.svg" class="warehouse__pack-img large" alt="LARGE">
-                            <img src="<?=$template_path?>/assets/images/ico-box-xl.svg" class="warehouse__pack-img xl" alt="XL">
-                            <img src="<?=$template_path?>/assets/images/ico-box-brown-lil.svg" class="warehouse__pack-img lil-brown" alt="LIL BROWN">
-                            <img src="<?=$template_path?>/assets/images/ico-box-brown-big.svg" class="warehouse__pack-img big-brown" alt="BIG BROWN">
+                            <img src="<?=$template_path?>/assets/images/ico-box-xl.svg" class="warehouse__pack-img xtra_large" alt="XL">
+                            <img src="<?=$template_path?>/assets/images/ico-box-lil-brown.svg" class="warehouse__pack-img lil_brown" alt="LIL BROWN">
+                            <img src="<?=$template_path?>/assets/images/ico-box-big-brown.svg" class="warehouse__pack-img big_brown" alt="BIG BROWN">
                         </div>
                         <div class="warehouse__pack-content">
                             <div class="warehouse__pick-info">
-                                <p><strong>Order #${order.id}</strong></p>
+                                <input type="hidden" id="label_url" value="">
+                                <p><strong>Order ${order.id}</strong></p>
                                 <p>${order.name}</p>
                                 <p>${order.address_1}</p>
                                 <p>${order.address_2}</p>
@@ -151,6 +157,32 @@ get_header();
                     <span>CONFIRM Quantity</span>
                 </div>
                 <div class="warehouse__quantity warehouse__quantity--red js-pick-quantity">
+                
+                </div>
+                <div class="auth__btn">
+                    <button type="button" class="btn" data-fancybox-close>Confirm</button>
+                </div>
+            </div>
+        </div>
+        <div class="popup popup--small popup--no-close" id="warehouse-pick-box-size">
+            <div class="popup__inner">
+                <div class="auth__title title-h1 small">
+                    <span>Suitable Bundle Orders Box Size</span>
+                </div>
+                <div class="js-pick-box-size">
+                
+                </div>
+                <div class="auth__btn">
+                    <button type="button" class="btn" data-fancybox-close>Confirm</button>
+                </div>
+            </div>
+        </div>
+        <div class="popup popup--small popup--no-close" id="warehouse-pick-customization">
+            <div class="popup__inner">
+                <div class="auth__title title-h1 small">
+                    <span>CONFIRM Customization</span>
+                </div>
+                <div class="warehouse__warning js-pick-customization">
                 
                 </div>
                 <div class="auth__btn">

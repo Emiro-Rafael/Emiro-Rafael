@@ -162,4 +162,21 @@ global $is_redesign_page;
             </div>
         </div>
     </header>
+    <div class="s-menu">
+        <div class="s-menu__inner">
+            <ul class="s-menu__list">
+                <?php if(is_page('ops')): ?>
+                    <?php if(isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false): ?>
+                        <li><a href="#" data-page-link="main">MAIN</a></li>
+                        <li><a href="#" data-page-link="pick">POWER PICK</a></li>
+                        <li><a href="#" data-page-link="pack">POWER PACK</a></li>
+                        <li><a href="#" data-page-link="utilities">UTILITIES</a></li>
+                        <li><a href="/ops?logout=1">LOGOUT</a></li>
+                    <?php else: ?>
+                        <li><a href="/ops">LOGIN</a></li>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
+    </div>
 <?php endif; ?>
