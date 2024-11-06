@@ -1635,20 +1635,75 @@ function blocks() {
 
             function sendPrinterRequest(barcode) {
               resetInactivityTimer();
+
+              var order_id = order.id;
+              var address = order.name + '\n' + order.address_1 + '\n' + order.address_2;
+              var barcodeData = '';
+              var order_items = '';
+              Object.entries(order.items).forEach(([key, item]) => {
+                if (typeof item === 'object' && !item.item_name) {
+                  Object.entries(item).forEach(([subKey, subItem]) => {
+                    order_items += subItem.quantity + ' x ' + subItem.item_name +'\n'; // Append subItem item_name followed by a newline
+                    // if (barcodeData == '') {
+                    //   barcodeData = barcode;
+                    // }
+                    
+                  });
+                } else {
+                  order_items += item.quantity + ' x ' + item.item_name +'\n'; // Append item_name followed by a newline for normal items
+                  // if (barcodeData == '') {
+                  //     barcodeData = barcode;
+                  //   }
+                }
+              });
+
+              // var assemblyLine = 'CB LN1';
+              //var dataMatrix = '';
+              // var address = address;
+              var contents = order_items;
+              //var customOrderNote = '';
+              // var barcodeData = barcodeData;
+              var additionalText = 'ORDER: ' + order_id;
+              var printerId = barcode;
+              // alert(printerId);
               let formData = new FormData();
               let xhr = new XMLHttpRequest();
 
               formData.append('action', 'send_print_request')
-              formData.append('order_id', order.id)
-              formData.append('printer_barcode', barcode)
+              formData.append('order_id', order_id)
+              formData.append('address', address)
+              formData.append('contents', contents)
+              // formData.append('barcodeData', barcodeData)
+              formData.append('additionalText', additionalText)
+              formData.append('printerId', printerId)
 
               xhr.open('post', '/wp-admin/admin-ajax.php');
               xhr.send(formData);
               xhr.onload = function() {
                 let data = xhr.responseText
-                try { data = JSON.parse(data) } catch (error) {}
+                try { data = JSON.parse(data) } catch (error) { }
+                // try {
+                //     // Attempt to parse the response if it's JSON
+                //     data = JSON.parse(data);
 
-                currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
+                //     // Assume that a successful response structure includes a `success` field
+                //     if (data.success) {
+                //         alert("Success: " + data.data);
+                //     } else {
+                //         // Handle cases where the response does not indicate success
+                //         alert("Error: An unexpected success response was received.");
+                //     }
+                // } catch (error) {
+                //     // Error parsing the JSON or missing `success` field
+                //     alert("Error processing success response: " + error.message);
+                // }
+                
+                currentBarcodeInstance = waitForBarcode(false, function(nextBarcode) {
+                    sendPrinterRequest(nextBarcode);
+                });
+                            
+
+                // currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest)
               };
             }
 
@@ -1704,7 +1759,9 @@ function blocks() {
                 if (!activeItem.classList.contains('js-printing-step')) {
                   currentBarcodeInstance = waitForBarcode(activeItem.dataset.barcode, onBarcodeInput);
                 } else {
-                  currentBarcodeInstance = waitForBarcode(false, sendPrinterRequest);
+                  currentBarcodeInstance = waitForBarcode(false, function (barcode) {
+                          sendPrinterRequest(barcode);
+                      });
                 }
               } catch (error) {
                 console.error('Error in barcode processing:', error);
@@ -2173,8 +2230,8 @@ function blocks() {
                 sounds.incorrect.currentTime = 0
               })
             }
-          } else if (!isNaN(event.key)) {
-            newBarcode += event.key;
+          } else if ((/^[a-zA-Z0-9]$/).test(event.key)) {
+              newBarcode += event.key;
           }
         }
 

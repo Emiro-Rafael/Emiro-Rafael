@@ -19,10 +19,10 @@ class Warehouse
     protected static $order_history_table = 'OrderHistory';
     private static $guest_user_table = 'guest_user';
     private static $user_table = 'Users';
-    
+    private static $address_table = 'Address';
+
     public static $box_sizes = array(
-        array
-        (
+        array(
             'name' => 'Small',
             'slug' => 'small',
             'length' => 9.5,
@@ -31,8 +31,7 @@ class Warehouse
             'tier' => 1,
             'bundle_group' => 1,
         ),
-        array
-        (
+        array(
             'name' => 'Medium',
             'slug' => 'medium',
             'length' => 10.5,
@@ -41,8 +40,7 @@ class Warehouse
             'tier' => 1,
             'bundle_group' => 1,
         ),
-        array
-        (
+        array(
             'name' => 'Large',
             'slug' => 'large',
             'length' => 11,
@@ -51,8 +49,7 @@ class Warehouse
             'tier' => 2,
             'bundle_group' => 1,
         ),
-        array
-        (
+        array(
             'name' => 'Xtra Large',
             'slug' => 'x_large',
             'length' => 13,
@@ -61,8 +58,7 @@ class Warehouse
             'tier' => 2,
             'bundle_group' => 1,
         ),
-        array
-        (
+        array(
             'name' => 'Lil Brown',
             'slug' => 'lil_brown',
             'length' => 13.5,
@@ -71,8 +67,7 @@ class Warehouse
             'tier' => 2,
             'bundle_group' => 1,
         ),
-        array
-        (
+        array(
             'name' => 'Big Brown',
             'slug' => 'big_brown',
             'length' => 18,
@@ -81,8 +76,7 @@ class Warehouse
             'tier' => 3,
             'bundle_group' => 2,
         ),
-        array
-        (
+        array(
             'name' => 'Big Ass',
             'slug' => 'corporate',
             'length' => 23.5,
@@ -162,7 +156,7 @@ class Warehouse
         $this->logged_in_users = array();
         $this->picker_number = $this->_setPickerCount();
         $this->picker_id = $_COOKIE['warehouse_id'];
-        if($this->picker_id)
+        if ($this->picker_id)
             $this->picker_user = 0; // get_user_meta( $this->picker_id, 'picker_user', true );
     }
 
@@ -197,32 +191,28 @@ class Warehouse
         $sql = "UPDATE " . self::$order_table . " 
             SET box_size = ? 
             WHERE id IN ($placeholders)";
-            
+
         $stmt = $this->dbh->prepare($sql);
-        
+
         // Merge all parameters (box_size first, followed by order_ids)
         $params = array_merge([$encoded_box_size], $order_ids);
-        
+
         return $stmt->execute($params);
     }
 
     public function adjustPickerNumber()
     {
         // return false;
-        if($this->picker_user >= $this->picker_number)
-        {
+        if ($this->picker_user >= $this->picker_number) {
             $arr = array();
-            foreach($this->logged_in_users as $user_id)
-            {
+            foreach ($this->logged_in_users as $user_id) {
                 $number = get_user_meta($user_id, 'picker_user', true);
                 array_push($arr, $number);
             }
             sort($arr);
-            for($i = 0; $i < $this->picker_user; $i++)
-            {
-                if( !in_array($i, $arr) )
-                {
-                    update_user_meta($this->picker_id, 'picker_user', $i );
+            for ($i = 0; $i < $this->picker_user; $i++) {
+                if (!in_array($i, $arr)) {
+                    update_user_meta($this->picker_id, 'picker_user', $i);
                     $this->picker_user = $i;
                     break;
                 }
@@ -237,14 +227,12 @@ class Warehouse
         $args = array(
             'role' => 'warehouse',
         );
-        $users = get_users( $args );
+        $users = get_users($args);
         $count = 0;
-        foreach($users as $user)
-        {
-            $session_tokens = get_user_meta( $user->ID, 'session_tokens', true );
+        foreach ($users as $user) {
+            $session_tokens = get_user_meta($user->ID, 'session_tokens', true);
 
-            if( time() < current($session_tokens)['expiration'])
-            {
+            if (time() < current($session_tokens)['expiration']) {
                 $count++;
                 array_push($this->logged_in_users, $user->ID);
             }
@@ -267,8 +255,7 @@ class Warehouse
 
     private function _getNextCustomer($skip = 0)
     {
-        if( !empty($_GET['skip']) )
-        {
+        if (!empty($_GET['skip'])) {
             $skip = $_GET['skip'];
         }
 
@@ -276,8 +263,7 @@ class Warehouse
 
         $to_skip = $skip;
         $skipped = 0;
-        while( empty($this->user_id) )
-        {
+        while (empty($this->user_id)) {
             $stmt = $this->dbh->prepare("SELECT `user_id`, purchased, shipping_address FROM " . self::$order_table . "
                 WHERE status = 'processing'
                 AND in_main_table = 0
@@ -297,20 +283,19 @@ class Warehouse
             $result = $stmt->fetch(PDO::FETCH_OBJ);
             $stmt = null;
 
-            if( !$result )
-            {
+            if (!$result) {
                 break;
             }
-            
+
             $purchased = str_replace("'", '"', $result->purchased);
             $items = unserialize($purchased);
-            if( is_array($items) && !$this->_checkForPreorders( array_keys($items) ) ){
+            if (is_array($items) && !$this->_checkForPreorders(array_keys($items))) {
 
                 //if($skipped >= $to_skip)
                 //{
-                    $this->setUserId($result->user_id);
-                    $this->setAddress($result->shipping_address);
-                    break;
+                $this->setUserId($result->user_id);
+                $this->setAddress($result->shipping_address);
+                break;
                 //}
                 $skipped++;
             }
@@ -318,50 +303,41 @@ class Warehouse
         }
     }
 
-    private function _checkForPreorders( $post_ids )
+    private function _checkForPreorders($post_ids)
     {
-        foreach( $post_ids as $post_id )
-        {
-            $preorder_date = get_post_meta( $post_id, 'preorder-shipping-date', true );
+        foreach ($post_ids as $post_id) {
+            $preorder_date = get_post_meta($post_id, 'preorder-shipping-date', true);
 
-            if( !empty($preorder_date) && strtotime($preorder_date) > time() )
-            {
+            if (!empty($preorder_date) && strtotime($preorder_date) > time()) {
                 return true;
             }
         }
         return false;
     }
 
-    private function getItemImage($post_id) {
+    private function getItemImage($post_id)
+    {
         $image_url = '';
-        switch( get_post_type( $post_id ) )
-        {
+        switch (get_post_type($post_id)) {
             case 'snack':
-                $thumbnail_id = get_post_meta($post_id, "medium-thumbnail", true); 
-                if(empty($thumbnail_id))
-                {
+                $thumbnail_id = get_post_meta($post_id, "medium-thumbnail", true);
+                if (empty($thumbnail_id)) {
                     $thumbnail_id = get_post_meta($post_id, "_thumbnail_id", true);
-                    if(empty($thumbnail_id))
-                    {
+                    if (empty($thumbnail_id)) {
                         $image_url = 'https://place-hold.it/264x264';
-                    }
-                    else {
+                    } else {
                         $image_url = wp_get_attachment_url($thumbnail_id);
                     }
-                }
-                else {
+                } else {
                     $image_url = wp_get_attachment_url($thumbnail_id);
                 }
                 break;
             case 'country':
             case 'collection':
                 $image_id = get_post_meta($post_id, "featured-image", true);
-                if(empty($image_id))
-                {
+                if (empty($image_id)) {
                     $image_url = get_stylesheet_directory_uri() . "/assets/default/MysteryCrateHero-min.png";
-                    
-                }
-                else {
+                } else {
                     $image_url = wp_get_attachment_url($image_id);
                 }
                 break;
@@ -369,8 +345,9 @@ class Warehouse
         return $image_url;
     }
 
-    private function getBarcodeFromPart($part) {
-        if($part == NULL) {
+    private function getBarcodeFromPart($part)
+    {
+        if ($part == NULL) {
             return "";
         }
 
@@ -391,15 +368,12 @@ class Warehouse
     {
         $all_part_ids = [];
         $part_types_ids = [];
-        if($printable)
-        {
+        if ($printable) {
             $stmt = $this->dbh->prepare("SELECT id, purchased, box_size, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'printable' AND in_main_table = 0 AND hidden = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
-        }
-        else
-        {
+        } else {
             $stmt = $this->dbh->prepare("SELECT id, purchased, box_size, payment_id, shipment_id, order_date, customization_notes, is_addon FROM " . self::$order_table . " WHERE user_id = :user_id AND shipping_address = :shipping_address AND status = 'processing' AND in_main_table = 0 AND hidden = 0 AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
         }
-        
+
         $stmt->bindParam(":user_id", $this->user_id);
         $stmt->bindParam(":shipping_address", $this->address_id);
         $stmt->execute();
@@ -412,269 +386,337 @@ class Warehouse
         $order_dates = array();
         $customization_notes = [];
         $total_items = 0;
+
         $box_size_data = [];
 
         $rows = $stmt->fetchAll(PDO::FETCH_OBJ);
-        foreach($rows as $row)
-        {
+        foreach ($rows as $row) {
             $purchased = str_replace("'", '"', $row->purchased);
             $purchase_items = unserialize($purchased);
             $box_size_data = $row->box_size ? json_decode($row->box_size, true) : [];
-            if( $this->_checkForPreorders( array_keys($purchase_items) ) )
-            {
+            if ($this->_checkForPreorders(array_keys($purchase_items))) {
                 continue;
             }
 
             array_push($ids, $row->id);
             array_push($payment_ids, $row->payment_id);
 
-            if(!empty($row->customization_notes)) {
+            if (!empty($row->customization_notes)) {
                 array_push($customization_notes, $row->customization_notes);
             }
 
-            if( !empty($row->shipment_id) && !in_array($row->shipment_id, $shipment_ids) )
+            if (!empty($row->shipment_id) && !in_array($row->shipment_id, $shipment_ids))
                 array_push($shipment_ids, $row->shipment_id);
 
             array_push($order_dates, $row->order_date);
-            
-            
-            foreach($purchase_items as $post_id => $details)
-            {
-                switch( get_post_type( $post_id ) )
-                {
+
+
+            foreach ($purchase_items as $post_id => $details) {
+                switch (get_post_type($post_id)) {
                     case 'snack':
 
-                        $internal_id_code = get_post_meta( $post_id, 'internal-id-code', true );
-                        $main_part = $inventree -> getInventreePartByIPN($internal_id_code);
-                        
-                        if($main_part != NULL) {
+                        $internal_id_code = get_post_meta($post_id, 'internal-id-code', true);
+                        $main_part = $inventree->getInventreePartByIPN($internal_id_code);
+
+                        if ($main_part != NULL) {
                             $part_id = $main_part->pk;
                             $boms = $inventree->getBOMByPartId($part_id);
-                            
-                            if(empty($boms)) {
+
+                            if (empty($boms)) {
                                 $all_part_ids[] = $part_id;
                                 $part_types_ids[$part_id] = 'snack';
-                                if( !array_key_exists( $part_id, $items ) )
-                                {
+                                if (!array_key_exists($part_id, $items)) {
                                     $total_items++;
                                     $items[$part_id] = new stdClass();
                                     $items[$part_id]->pk = $part_id;
-                                    $items[$part_id]->item_name = get_the_title( $post_id );
-                                    if(is_array($details)) {
-                                        foreach($details as $quantity)
-                                        {
+                                    $items[$part_id]->item_name = get_the_title($post_id);
+                                    if (is_array($details)) {
+                                        foreach ($details as $quantity) {
                                             $items[$part_id]->quantity = $quantity;
                                         }
                                     } else {
                                         $items[$part_id]->quantity = $details;
                                     }
-                                    $items[$part_id]->barcode = $this->getBarcodeFromPart( $main_part);
+                                    $items[$part_id]->barcode = $this->getBarcodeFromPart($main_part);
                                     $items[$part_id]->img = $this->getItemImage($post_id);
-                                }else
-                                {
+                                } else {
                                     $items[$part_id]->quantity += $details;
-                                } 
-                            }
-                            else {
-                                foreach($boms as $bom) {
+                                }
+                            } else {
+                                foreach ($boms as $bom) {
                                     $sub_part_id = $bom->sub_part;
                                     $all_part_ids[] = $sub_part_id;
                                     $part_types_ids[$sub_part_id] = 'snack bom';
                                     $sub_part_quantity = $bom->quantity;
                                     $sub_part = $inventree->getInventreePartById($sub_part_id);
-                                    $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
-                                    if( !array_key_exists( $sub_part_id, $items ) ) {
+                                    $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com" . $sub_part->image : "";
+                                    if (!array_key_exists($sub_part_id, $items)) {
                                         $total_items++;
                                         $items[$sub_part_id] = new stdClass();
                                         $items[$sub_part_id]->pk = $sub_part_id;
                                         $items[$sub_part_id]->item_name = $sub_part->name;
-                                        if(is_array($details)) {
-                                            foreach($details as $quantity)
-                                            {
+                                        if (is_array($details)) {
+                                            foreach ($details as $quantity) {
                                                 $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
                                             }
                                         } else {
                                             $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
                                         }
-                                        $items[$sub_part_id]->barcode = $this->getBarcodeFromPart( $sub_part);
+                                        $items[$sub_part_id]->barcode = $this->getBarcodeFromPart($sub_part);
                                         $items[$sub_part_id]->img = $sub_part_img;
-                                    }
-                                    else {
+                                    } else {
                                         $items[$sub_part_id]->quantity += $details * $sub_part_quantity;
                                     }
                                 }
-                            }    
+                            }
                         }
                         break;
 
                     case 'country':
-                        $key = "country-". $post_id;
-                        foreach($details as $size => $quantity)
-                        {
-                            if( !array_key_exists( $key, $items ) )
-                            {
+                        $key = "country-" . $post_id;
+                        foreach ($details as $size => $quantity) {
+                            if (!array_key_exists($key, $items)) {
                                 $items[$key] = array();
                             }
 
-                            if( !array_key_exists( $size, $items[$key] ) )
-                            {
+                            if (!array_key_exists($size, $items[$key])) {
                                 $total_items++;
-                                $internal_id_code_key = "internal-id-code_" .$size;
-                                if(get_post_meta( $post_id, $internal_id_code_key, true )) {
-                                    $internal_id_code = get_post_meta( $post_id, $internal_id_code_key, true );
-                                }else {
-                                    $internal_id_code_others = get_post_meta( $post_id, 'internal-id-code_Others', true );
-                                    if(!empty($internal_id_code_others)) {
-                                        $filtered_code_items = array_filter($internal_id_code_others, function($code_item) use ($size) {
+                                $internal_id_code_key = "internal-id-code_" . $size;
+                                if (get_post_meta($post_id, $internal_id_code_key, true)) {
+                                    $internal_id_code = get_post_meta($post_id, $internal_id_code_key, true);
+                                } else {
+                                    $internal_id_code_others = get_post_meta($post_id, 'internal-id-code_Others', true);
+                                    if (!empty($internal_id_code_others)) {
+                                        $filtered_code_items = array_filter($internal_id_code_others, function ($code_item) use ($size) {
                                             return $code_item['size'] === $size;
                                         });
-                
+
                                         $internal_id_code = !empty($filtered_code_items) ? array_values($filtered_code_items)[0]['code'] : '';
                                     }
                                 }
 
-                                $part = $inventree -> getInventreePartByIPN($internal_id_code);
+                                $part = $inventree->getInventreePartByIPN($internal_id_code);
                                 $part_id = $part->pk;
                                 $all_part_ids[] = $part_id;
                                 $part_types_ids[$part_id] = 'country';
 
                                 $items[$key][$size] = new stdClass();
                                 $items[$key][$size]->pk = $part_id;
-                                $items[$key][$size]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
+                                $items[$key][$size]->item_name = get_the_title($post_id) . ' ' . CountryModel::getPrettyName($size);
                                 $items[$key][$size]->quantity = $quantity;
-                                $items[$key][$size]->barcode = $this->getBarcodeFromPart( $part);
+                                $items[$key][$size]->barcode = $this->getBarcodeFromPart($part);
                                 $items[$key][$size]->img = $this->getItemImage($post_id);
-                                $part_img = $part->image ? "https://ops.snackcrate.com". $part->image : "";
+                                $part_img = $part->image ? "https://ops.snackcrate.com" . $part->image : "";
                                 $items[$key][$size]->img = $part_img ? $part_img : $this->getItemImage($post_id);
                                 $items[$key][$size]->customization = $row->customization_notes;
-                            }
-                            else
-                            {
+                            } else {
                                 $items[$key][$size]->quantity += $quantity;
                             }
                         }
                         break;
 
                     case 'collection':
-                        $internal_id_code = get_post_meta( $post_id, 'internal-id-code', true );
-                        $main_part = $inventree -> getInventreePartByIPN($internal_id_code);
+                        $internal_id_code = get_post_meta($post_id, 'internal-id-code', true);
+                        $main_part = $inventree->getInventreePartByIPN($internal_id_code);
 
-                        if($main_part != NULL) {
-                            if(!is_array($details)) {
-                                $code = get_post_meta( $post_id, 'country-code', true);
+                        if ($main_part != NULL) {
+                            if (!is_array($details)) {
+                                $code = get_post_meta($post_id, 'country-code', true);
 
                                 $part_id = $main_part->pk;
                                 $boms = $inventree->getBOMByPartId($part_id);
 
-                                if(empty($boms)) {
+                                if (empty($boms)) {
                                     $all_part_ids[] = $part_id;
                                     $part_types_ids[$part_id] = 'collection';
-                                    if( !array_key_exists( $part_id, $items ) )
-                                    {
+                                    if (!array_key_exists($part_id, $items)) {
                                         $total_items++;
                                         $items[$part_id] = new stdClass();
                                         $items[$part_id]->pk = $part_id;
-                                        $items[$part_id]->item_name = get_the_title( $post_id );
+                                        $items[$part_id]->item_name = get_the_title($post_id);
                                         $items[$part_id]->quantity = $details;
-                                        $items[$part_id]->barcode =  $this->getBarcodeFromPart( $main_part);
+                                        $items[$part_id]->barcode =  $this->getBarcodeFromPart($main_part);
                                         $items[$part_id]->img = $this->getItemImage($post_id);
-                                        
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         $items[$part_id]->quantity += $details;
-                                    }    
+                                    }
                                 } else {
-                                    foreach($boms as $bom) {
+                                    foreach ($boms as $bom) {
                                         $sub_part_id = $bom->sub_part;
                                         $all_part_ids[] = $sub_part_id;
                                         $part_types_ids[$sub_part_id] = 'collection bom';
                                         $sub_part_quantity = $bom->quantity;
                                         $sub_part = $inventree->getInventreePartById($sub_part_id);
-                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
-                                        if( !array_key_exists( $sub_part_id, $items ) ) {
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com" . $sub_part->image : "";
+                                        if (!array_key_exists($sub_part_id, $items)) {
                                             $total_items++;
                                             $items[$sub_part_id] = new stdClass();
                                             $items[$sub_part_id]->pk = $sub_part_id;
                                             $items[$sub_part_id]->item_name = $sub_part->name;
                                             $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
-                                            $items[$sub_part_id]->barcode = $this->getBarcodeFromPart( $sub_part);
+                                            $items[$sub_part_id]->barcode = $this->getBarcodeFromPart($sub_part);
                                             $items[$sub_part_id]->img = $sub_part_img;
-                                        }
-                                        else {
+                                        } else {
                                             $items[$sub_part_id]->quantity += $details * $sub_part_quantity;
                                         }
                                     }
                                 }
-
                             } else {
 
                                 $part_id = $main_part->pk;
                                 $boms = $inventree->getBOMByPartId($part_id);
-                                if(empty($boms)) {
+                                if (empty($boms)) {
                                     $all_part_ids[] = $part_id;
                                     $part_types_ids[$part_id] = 'collection no details';
-                                    foreach($details as $size => $quantity)
-                                    {
-                                        if( !array_key_exists( $part_id, $items ) )
-                                        {
+                                    foreach ($details as $size => $quantity) {
+                                        if (!array_key_exists($part_id, $items)) {
                                             $items[$part_id] = array();
                                         }
-        
-                                        if( !array_key_exists( $size, $items[$part_id] ) )
-                                        {
+
+                                        if (!array_key_exists($size, $items[$part_id])) {
                                             $total_items++;
                                             $items[$part_id] = new stdClass();
                                             $items[$part_id]->pk = $part_id;
-                                            $items[$part_id]->item_name = get_the_title( $post_id ) . ' ' . CountryModel::getPrettyName($size);
+                                            $items[$part_id]->item_name = get_the_title($post_id) . ' ' . CountryModel::getPrettyName($size);
                                             $items[$part_id]->quantity = $quantity;
-                                            $items[$part_id]->barcode =$this->getBarcodeFromPart( $main_part);
+                                            $items[$part_id]->barcode = $this->getBarcodeFromPart($main_part);
                                             $items[$part_id]->img = $this->getItemImage($post_id);
-                                        }
-                                        else
-                                        {
+                                        } else {
                                             $items[$part_id]->quantity += $quantity;
                                         }
                                     }
-                                }else {
-                                    foreach($boms as $bom) {
+                                } else {
+                                    foreach ($boms as $bom) {
                                         $sub_part_id = $bom->sub_part;
                                         $all_part_ids[] = $sub_part_id;
                                         $part_types_ids[$sub_part_id] = 'collection no details bom';
                                         $sub_part_quantity = $bom->quantity;
                                         $sub_part = $inventree->getInventreePartById($sub_part_id);
-                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com". $sub_part->image : "";
-                                        
-                                        foreach($details as $size => $quantity){
-                                            if( !array_key_exists( $sub_part_id, $items ) )
-                                            {
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com" . $sub_part->image : "";
+
+                                        foreach ($details as $size => $quantity) {
+                                            if (!array_key_exists($sub_part_id, $items)) {
                                                 $items[$sub_part_id] = array();
                                             }
-            
-                                            if( !array_key_exists( $size, $items[$sub_part_id] ) )
-                                            {
+
+                                            if (!array_key_exists($size, $items[$sub_part_id])) {
                                                 $total_items++;
                                                 $items[$sub_part_id] = new stdClass();
                                                 $items[$sub_part_id]->pk = $sub_part_id;
                                                 $items[$sub_part_id]->item_name = $sub_part->name;
                                                 $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
-                                                $items[$sub_part_id]->barcode =$this->getBarcodeFromPart( $sub_part);
+                                                $items[$sub_part_id]->barcode = $this->getBarcodeFromPart($sub_part);
                                                 $items[$sub_part_id]->img = $sub_part_img;
-                                            }
-                                            else
-                                            {
+                                            } else {
                                                 $items[$sub_part_id]->quantity += $quantity * $sub_part_quantity;
                                             }
                                         }
                                     }
                                 }
-                                
-                            }   
-                        } 
+                            }
+                        }
+                        $internal_id_code = get_post_meta($post_id, 'internal-id-code', true);
+                        $main_part = $inventree->getInventreePartByIPN($internal_id_code);
+
+                        if ($main_part != NULL) {
+                            if (!is_array($details)) {
+                                $code = get_post_meta($post_id, 'country-code', true);
+
+                                $part_id = $main_part->pk;
+                                $boms = $inventree->getBOMByPartId($part_id);
+
+                                if (empty($boms)) {
+                                    $all_part_ids[] = $part_id;
+                                    $part_types_ids[$part_id] = 'collection';
+                                    if (!array_key_exists($part_id, $items)) {
+                                        $total_items++;
+                                        $items[$part_id] = new stdClass();
+                                        $items[$part_id]->pk = $part_id;
+                                        $items[$part_id]->item_name = get_the_title($post_id);
+                                        $items[$part_id]->quantity = $details;
+                                        $items[$part_id]->barcode =  $this->getBarcodeFromPart($main_part);
+                                        $items[$part_id]->img = $this->getItemImage($post_id);
+                                    } else {
+                                        $items[$part_id]->quantity += $details;
+                                    }
+                                } else {
+                                    foreach ($boms as $bom) {
+                                        $sub_part_id = $bom->sub_part;
+                                        $all_part_ids[] = $sub_part_id;
+                                        $part_types_ids[$sub_part_id] = 'collection bom';
+                                        $sub_part_quantity = $bom->quantity;
+                                        $sub_part = $inventree->getInventreePartById($sub_part_id);
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com" . $sub_part->image : "";
+                                        if (!array_key_exists($sub_part_id, $items)) {
+                                            $total_items++;
+                                            $items[$sub_part_id] = new stdClass();
+                                            $items[$sub_part_id]->pk = $sub_part_id;
+                                            $items[$sub_part_id]->item_name = $sub_part->name;
+                                            $items[$sub_part_id]->quantity = $details * $sub_part_quantity;
+                                            $items[$sub_part_id]->barcode = $this->getBarcodeFromPart($sub_part);
+                                            $items[$sub_part_id]->img = $sub_part_img;
+                                        } else {
+                                            $items[$sub_part_id]->quantity += $details * $sub_part_quantity;
+                                        }
+                                    }
+                                }
+                            } else {
+
+                                $part_id = $main_part->pk;
+                                $boms = $inventree->getBOMByPartId($part_id);
+                                if (empty($boms)) {
+                                    $all_part_ids[] = $part_id;
+                                    $part_types_ids[$part_id] = 'collection no details';
+                                    foreach ($details as $size => $quantity) {
+                                        if (!array_key_exists($part_id, $items)) {
+                                            $items[$part_id] = array();
+                                        }
+
+                                        if (!array_key_exists($size, $items[$part_id])) {
+                                            $total_items++;
+                                            $items[$part_id] = new stdClass();
+                                            $items[$part_id]->pk = $part_id;
+                                            $items[$part_id]->item_name = get_the_title($post_id) . ' ' . CountryModel::getPrettyName($size);
+                                            $items[$part_id]->quantity = $quantity;
+                                            $items[$part_id]->barcode = $this->getBarcodeFromPart($main_part);
+                                            $items[$part_id]->img = $this->getItemImage($post_id);
+                                        } else {
+                                            $items[$part_id]->quantity += $quantity;
+                                        }
+                                    }
+                                } else {
+                                    foreach ($boms as $bom) {
+                                        $sub_part_id = $bom->sub_part;
+                                        $all_part_ids[] = $sub_part_id;
+                                        $part_types_ids[$sub_part_id] = 'collection no details bom';
+                                        $sub_part_quantity = $bom->quantity;
+                                        $sub_part = $inventree->getInventreePartById($sub_part_id);
+                                        $sub_part_img = $sub_part->image ? "https://ops.snackcrate.com" . $sub_part->image : "";
+
+                                        foreach ($details as $size => $quantity) {
+                                            if (!array_key_exists($sub_part_id, $items)) {
+                                                $items[$sub_part_id] = array();
+                                            }
+
+                                            if (!array_key_exists($size, $items[$sub_part_id])) {
+                                                $total_items++;
+                                                $items[$sub_part_id] = new stdClass();
+                                                $items[$sub_part_id]->pk = $sub_part_id;
+                                                $items[$sub_part_id]->item_name = $sub_part->name;
+                                                $items[$sub_part_id]->quantity = $quantity * $sub_part_quantity;
+                                                $items[$sub_part_id]->barcode = $this->getBarcodeFromPart($sub_part);
+                                                $items[$sub_part_id]->img = $sub_part_img;
+                                            } else {
+                                                $items[$sub_part_id]->quantity += $quantity * $sub_part_quantity;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         break;
                 }
             }
-        
         }
         $this->items = $items;
 
@@ -682,7 +724,7 @@ class Warehouse
         $order_ids = implode(',', $ids);
         $session_id = uniqid('session_', true);
 
-        $stmt = $this->dbh->prepare("UPDATE " .self::$order_table. " SET session_id = :session_id WHERE id IN ({$order_ids})");
+        $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET session_id = :session_id WHERE id IN ({$order_ids})");
         $stmt->bindParam(":session_id", $session_id);
         $stmt->execute();
 
@@ -690,7 +732,7 @@ class Warehouse
             $all_part_ids = array_unique($all_part_ids);
             // error_log(print_r($part_types_ids, 1));
             $parameters = $inventree->getParametersForParts($all_part_ids);
-            
+
             // Attach parameters to items
             foreach ($items as $key => &$item) {
                 if (is_array($item)) {
@@ -720,15 +762,13 @@ class Warehouse
             'total_items' => $total_items
         );
     }
-    
-    public function setOrdersSessionExpired($order_ids) {
 
-        if( count( explode(',', $order_ids) ) > 1 )
-        {
+    public function setOrdersSessionExpired($order_ids)
+    {
+
+        if (count(explode(',', $order_ids)) > 1) {
             $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET session_id = NULL WHERE id IN ({$order_ids})");
-        }
-        else
-        {
+        } else {
             $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET session_id = NULL WHERE id = :order_id");
             $stmt->bindParam(":order_id", $order_ids);
         }
@@ -739,19 +779,17 @@ class Warehouse
     public function sortItemsByCountry($items)
     {
         $countries = array();
-        foreach( array_keys($items) as $post_id )
-        {
-            $terms = get_the_terms( $post_id, 'countries' );
+        foreach (array_keys($items) as $post_id) {
+            $terms = get_the_terms($post_id, 'countries');
             $countries[$terms[0]->slug][] = $post_id;
         }
 
         $return_items = array();
 
-        foreach(array_merge(...array_values($countries)) as $post_id)
-        {
+        foreach (array_merge(...array_values($countries)) as $post_id) {
             $return_items[$post_id] = $items[$post_id];
         }
-        
+
         return $return_items;
     }
 
@@ -770,23 +808,20 @@ class Warehouse
     {
         $user_ids = [];
 
-        $stmt = $this->dbh->prepare( "SELECT `user_id`, purchased, is_addon, hidden FROM " . self::$order_table . " WHERE in_main_table = 0 AND hidden = 0 AND status = 'processing' AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL" );
+        $stmt = $this->dbh->prepare("SELECT `user_id`, purchased, is_addon, hidden FROM " . self::$order_table . " WHERE in_main_table = 0 AND hidden = 0 AND status = 'processing' AND (preorder_date IS NULL OR preorder_date <= CURDATE()) AND session_id IS NULL");
 
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_OBJ);
         $stmt = null;
 
-        foreach($orders as $order)
-        {
+        foreach ($orders as $order) {
 
-            if( in_array( $order->user_id, $user_ids ) )
-            {
+            if (in_array($order->user_id, $user_ids)) {
                 continue;
             }
             $purchased = str_replace("'", '"', $order->purchased);
             $items = unserialize($purchased);
-            if( is_array($items) && !$this->_checkForPreorders( array_keys($items) ) )
-            {
+            if (is_array($items) && !$this->_checkForPreorders(array_keys($items))) {
                 array_push($user_ids, $order->user_id);
             }
         }
@@ -801,12 +836,9 @@ class Warehouse
 
         $printables = $stmt->fetch(PDO::FETCH_OBJ);
 
-        if( empty($printables) )
-        {
+        if (empty($printables)) {
             return false;
-        }
-        else
-        {
+        } else {
             $this->setUserId($printables->user_id);
             $this->setAddress($printables->shipping_address);
             return explode(',', $printables->shipment_id);
@@ -827,12 +859,9 @@ class Warehouse
 
     public function getNextOrder($printable = false, $order_id = null)
     {
-        if( !empty($order_id) )
-        {
+        if (!empty($order_id)) {
             $this->_setNextCustomerByOrder($order_id);
-        }
-        elseif( empty($this->user_id) )
-        {
+        } elseif (empty($this->user_id)) {
             $this->_getNextCustomer();
         }
 
@@ -843,23 +872,21 @@ class Warehouse
 
     public function getCustomerInformation()
     {
-        if( empty($this->user_id) )
-        {
+        if (empty($this->user_id)) {
             $this->_getNextCustomer();
         }
 
-        if( substr($this->user_id, 0, 1) == 'g' )
-        {
+        if (substr($this->user_id, 0, 1) == 'g') {
             $stmt = $this->dbh->prepare("SELECT email, first_name, last_name, `address`, country FROM " . self::$guest_user_table . " WHERE user_id = :user_id");
             $stmt->bindParam(":user_id", $this->user_id);
             $stmt->execute();
-            
+
             $user_data = $stmt->fetch(PDO::FETCH_OBJ);
             $stmt = null;
             //$address = unserialize($user_data->address);
             $address = $this->address->getData();
 
-            $user_data->shipping_name = $user_data->first_name.' '.$user_data->last_name;
+            $user_data->shipping_name = $user_data->first_name . ' ' . $user_data->last_name;
             $user_data->address_1 = $address->address_1;
             $user_data->address_2 = $address->address_2;
             $user_data->city = $address->city;
@@ -867,9 +894,7 @@ class Warehouse
             $user_data->zip = $address->zipcode;
             $user_data->phone = $address->phone;
             return $user_data;
-        }
-        else
-        {
+        } else {
             $stmt = $this->dbh->prepare("SELECT email FROM " . self::$user_table . " WHERE id = :user_id");
             $stmt->bindParam(":user_id", $this->user_id);
             $stmt->execute();
@@ -890,8 +915,7 @@ class Warehouse
         $ids = explode(',', $data['ids']);
         $payment_ids = explode(',', $data['payment_ids']);
         $order_dates = explode(',', $data['order_dates']);
-        foreach($ids as $key => $id)
-        {
+        foreach ($ids as $key => $id) {
             $upd = $this->dbh->prepare("SELECT customization_notes FROM " . self::$order_table . " WHERE id = :id");
             $upd->bindParam(":id", $id);
             $upd->execute();
@@ -911,35 +935,26 @@ class Warehouse
     private function _checkBundles($boxes, $data)
     {
         $bundles = array();
-        
-        foreach($boxes as $id => $box)
-        {
+
+        foreach ($boxes as $id => $box) {
             $details = self::$box_sizes[$box];
             $details['weight'] = ($data['weight_lb'][$id] * 16) + $data['weight_oz'][$id];
-            if( array_key_exists( $details['bundle_group'], $bundles ) )
-            {
+            if (array_key_exists($details['bundle_group'], $bundles)) {
                 array_push($bundles[$details['bundle_group']], $details);
-            }
-            else
-            {
+            } else {
                 $bundles[$details['bundle_group']] = array($details);
             }
         }
-        
+
         $final_bundles = array();
-        foreach($bundles as $group => $bundle)
-        {
-            if( $group == 4 ) // not bundle material
+        foreach ($bundles as $group => $bundle) {
+            if ($group == 4) // not bundle material
             {
-                foreach( $bundle as $chunk )
-                {
-                    array_push( $final_bundles, array( $chunk ) );
+                foreach ($bundle as $chunk) {
+                    array_push($final_bundles, array($chunk));
                 }
-            }
-            else
-            {
-                foreach( array_chunk($bundle, 3) as $chunk )
-                {
+            } else {
+                foreach (array_chunk($bundle, 3) as $chunk) {
                     array_push($final_bundles, $chunk);
                 }
             }
@@ -949,7 +964,7 @@ class Warehouse
 
     public function generateLabel($data)
     {
-        $to_address = $this->easypost_helper->createAddress( $data );
+        $to_address = $this->easypost_helper->createAddress($data);
 
         $order_ids = explode(',', $data['ids']);
         $shipments = array();
@@ -958,38 +973,33 @@ class Warehouse
         $shipping_cost = 0;
 
         $bundles = $this->_checkBundles($data['boxsize'], $data);
-        
-        foreach($bundles as $bundle)
-        {
+
+        foreach ($bundles as $bundle) {
             $widths = array_map(
-                function($b)
-                {
+                function ($b) {
                     return $b['width'];
                 },
                 $bundle
             );
             $heights = array_map(
-                function($b)
-                {
+                function ($b) {
                     return $b['height'];
                 },
                 $bundle
             );
             $lengths = array_map(
-                function($b)
-                {
+                function ($b) {
                     return $b['length'];
                 },
                 $bundle
             );
             $weights = array_map(
-                function($b)
-                {
+                function ($b) {
                     return $b['weight'];
                 },
                 $bundle
             );
-            
+
             $details = array(
                 'weight' => array_sum($weights),
                 'height' => array_sum($heights),
@@ -997,16 +1007,14 @@ class Warehouse
                 'width' => max($widths),
             );
 
-            if( $details['weight'] == 0 )
-            {
+            if ($details['weight'] == 0) {
                 throw new Exception("Cannot have a box with a weight of zero!");
             }
-            
+
             $parcel = $details;
 
             $total_value = 0;
-            foreach($order_ids as $id)
-            {
+            foreach ($order_ids as $id) {
                 $stmt = $this->dbh->prepare("SELECT cost FROM " . self::$order_table . " WHERE id = :id");
                 $stmt->bindParam(":id", $id);
                 $stmt->execute();
@@ -1016,29 +1024,27 @@ class Warehouse
             }
 
             $has_cold_pack = false;
-            foreach($order_ids as $id)
-            {
+            foreach ($order_ids as $id) {
                 $stmt = $this->dbh->prepare("SELECT * FROM candybar_order_item WHERE order_id = :order_id AND item_id = 384050");
                 $stmt->bindParam(":order_id", $id);
                 $stmt->execute();
                 $order_items = $stmt->fetch(PDO::FETCH_ASSOC);
                 $stmt = null;
 
-                if(!empty($order_items)) $has_cold_pack = true;
+                if (!empty($order_items)) $has_cold_pack = true;
             }
 
-            $shipment = $this->easypost_helper->createShipment( $to_address, $parcel, $payment_ids[0], $data['number_of_items'], $total_value, $has_cold_pack );
+            $shipment = $this->easypost_helper->createShipment($to_address, $parcel, $payment_ids[0], $data['number_of_items'], $total_value, $has_cold_pack);
 
             $shipping_cost += $shipment->selected_rate->rate;
             $trackingcode = empty($trackingcode) ? $shipment->tracker->id : $trackingcode;
             $tracking_number = empty($tracking_number) ? $shipment->tracker->tracking_code : $tracking_number;
             array_push($shipments, $shipment->id);
         }
-        
+
         $shipment_ids = implode(',', $shipments);
 
-        foreach($order_ids as $key => $id)
-        {
+        foreach ($order_ids as $key => $id) {
             // add shipment id(s) to candy_order table AND update status of order to fulfilled
             $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET shipment_id = :shipment_id, status = 'printable' WHERE id = :id");
             $stmt->bindParam(":shipment_id", $shipment_ids);
@@ -1094,7 +1100,7 @@ class Warehouse
 
             }
             */
-            
+
 
             /*
             SCKlaviyoHelper::getInstance()->sendEvent(
@@ -1129,8 +1135,7 @@ class Warehouse
     {
         $shipments = explode(',', $data['shipment_ids']);
         $labels = array();
-        foreach($shipments as $shipment_id)
-        {
+        foreach ($shipments as $shipment_id) {
             $label = $this->easypost_helper->getLabel($shipment_id);
             array_push($labels, $label);
         }
@@ -1140,10 +1145,8 @@ class Warehouse
 
     public function nextOrder($ids, $set_fulfilled = 1)
     {
-        if($set_fulfilled == 1)
-        {
-            foreach($ids as $id)
-            {
+        if ($set_fulfilled == 1) {
+            foreach ($ids as $id) {
                 // add shipment id(s) to candy_order table AND update status of order to fulfilled
                 $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET status = 'fulfilled', ship_date = CURRENT_DATE() WHERE id = :id");
                 $stmt->bindParam(":id", $id);
@@ -1162,14 +1165,11 @@ class Warehouse
         return $nextid;
     }
 
-    public function setAsPrintable( $ids )
+    public function setAsPrintable($ids)
     {
-        if( count( explode(',', $ids) ) > 1 )
-        {
+        if (count(explode(',', $ids)) > 1) {
             $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET status = 'printable' WHERE id IN ({$ids})");
-        }
-        else
-        {
+        } else {
             $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET status = 'printable' WHERE id = :order_id");
             $stmt->bindParam(":order_id", $ids);
         }
@@ -1177,7 +1177,7 @@ class Warehouse
         $stmt = null;
     }
 
-    public function checkOrder( $order_id )
+    public function checkOrder($order_id)
     {
         $stmt = $this->dbh->prepare("SELECT `status` FROM " . self::$order_table . " WHERE id = :order_id");
         $stmt->bindParam(":order_id", $order_id);
@@ -1186,8 +1186,7 @@ class Warehouse
 
         $stmt = null;
 
-        switch( $status )
-        {
+        switch ($status) {
             case 'processing':
                 throw new Exception("Order not ready for printing");
                 break;
@@ -1202,14 +1201,11 @@ class Warehouse
         }
     }
 
-    public function getScanforms( $printed = false )
+    public function getScanforms($printed = false)
     {
-        if( $printed )
-        {
+        if ($printed) {
             $stmt = $this->dbh->prepare("SELECT * FROM candybar_scanform WHERE printed_at IS NOT NULL");
-        }
-        else
-        {
+        } else {
             $stmt = $this->dbh->prepare("SELECT * FROM candybar_scanform WHERE printed_at IS NULL");
         }
 
@@ -1233,7 +1229,70 @@ class Warehouse
         $stmt->bindParam(":id", $id);
         $stmt->execute();
         $stmt = null;
-        
+
         return $link;
+    }
+
+    public function getCustomerDataByOrderId($order_id)
+    {
+        // Prepare the SQL statement to fetch all customer data
+        $stmt = $this->dbh->prepare("SELECT * FROM " . self::$order_table . " WHERE id = :order_id");
+        $stmt->bindParam(":order_id", $order_id);
+        $stmt->execute();
+
+        // Fetching the customer data as an object
+        $customer_data = $stmt->fetch(PDO::FETCH_OBJ);
+
+        // Return the fetched data
+        return $customer_data;
+    }
+
+    public function getCustomerDataByUserId($user_id)
+    {
+        if (substr($user_id, 0, 1) == 'g') {
+            $stmt = $this->dbh->prepare("SELECT * FROM " . self::$guest_user_table . " WHERE user_id = :user_id");
+            $stmt->bindParam(":user_id", $user_id);
+            $stmt->execute();
+
+            $user_data = $stmt->fetch(PDO::FETCH_OBJ);
+            return $user_data;
+        } else {
+            $stmt = $this->dbh->prepare("SELECT * FROM " . self::$user_table . " WHERE id = :user_id");
+            $stmt->bindParam(":user_id", $user_id);
+            $stmt->execute();
+            $user_data = $stmt->fetch(PDO::FETCH_OBJ);
+
+            return $user_data;
+        }
+        // Return the fetched data
+    }
+
+    public function getCustomerDataByCustomerID($customer_id)
+    {
+        // Prepare the SQL statement to fetch all customer data
+        $stmt = $this->dbh->prepare("SELECT * FROM " . self::$address_table . " WHERE customer_id = :customer_id");
+        $stmt->bindParam(":customer_id", $customer_id);
+        $stmt->execute();
+
+        // Fetching the customer data as an object
+        $customer_data = $stmt->fetch(PDO::FETCH_OBJ);
+
+        // Return the fetched data
+        return $customer_data;
+    }
+
+    public function updateBarcodeReference($order_id, $new_barcode_reference)
+    {
+        $stmt = $this->dbh->prepare("UPDATE " . self::$order_table . " SET barcode_reference = :barcode_reference WHERE id = :id");
+
+        // Bind the parameters
+        $stmt->bindParam(":barcode_reference", $new_barcode_reference);
+        $stmt->bindParam(":id", $order_id);
+
+        // Execute the statement
+        $stmt->execute();
+
+        // Nullify the statement to free up resources
+        $stmt = null;
     }
 }

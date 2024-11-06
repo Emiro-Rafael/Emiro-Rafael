@@ -1,5 +1,6 @@
 <?php
-class Inventree{
+class Inventree
+{
     private static $instance = null;
     private $inventree_url;
     private $login_endpoint;
@@ -7,7 +8,8 @@ class Inventree{
     private $inventree_psw;
     private $token;
 
-    function __construct() {
+    function __construct()
+    {
         $this->inventree_url = "https://ops.snackcrate.com";
         $this->login_endpoint = "https://ops.snackcrate.com/api/auth/login/";
         $this->inventree_user = $_ENV['inventree_user'];
@@ -15,8 +17,9 @@ class Inventree{
         $this->inventreeLogin();
     }
 
-    private function inventreeLogin(){     
-        $curl = curl_init();    
+    private function inventreeLogin()
+    {
+        $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => $this->login_endpoint,
             CURLOPT_RETURNTRANSFER => true,
@@ -28,17 +31,18 @@ class Inventree{
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => "username=$this->inventree_user&password=$this->inventree_psw",
             CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/x-www-form-urlencoded'           
+                'Content-Type: application/x-www-form-urlencoded'
             ),
         ));
-    
-        $response = curl_exec($curl); 
-        $response_data = json_decode($response);   
+
+        $response = curl_exec($curl);
+        $response_data = json_decode($response);
         curl_close($curl);
-        $this->token = $response_data->key;       
+        $this->token = $response_data->key;
     }
 
-    function addInventreePart($part_data){
+    function addInventreePart($part_data)
+    {
         $endpoint = $this->inventree_url . "/api/part/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -60,10 +64,10 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         return $response;
-
     }
-    
-    function getInventreePartById($part_id){
+
+    function getInventreePartById($part_id)
+    {
         $endpoint = $this->inventree_url . "/api/part/$part_id/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -98,15 +102,16 @@ class Inventree{
 
 
 
-    function getParametersForParts($part_ids) {
+    function getParametersForParts($part_ids)
+    {
         if (empty($part_ids)) {
             return [];
         }
-        
+
         // Convert array of IDs to comma-separated string
         $ids = implode(',', array_unique($part_ids));
         $endpoint = $this->inventree_url . "/api/part/parameter/?part__in=$ids";
-        
+
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => $endpoint,
@@ -125,9 +130,9 @@ class Inventree{
 
         $response = curl_exec($curl);
         curl_close($curl);
-        
+
         $parameters = json_decode($response);
-        
+
         // Organize parameters by part ID
         $paramsByPart = [];
         foreach ($parameters as $param) {
@@ -140,15 +145,16 @@ class Inventree{
                 'units' => $param->template_detail->units
             ];
         }
-        
+
         return $paramsByPart;
     }
 
-    function getInventreePartByIPN($IPN, $include_parameters = false){
-        if($IPN == '') {
+    function getInventreePartByIPN($IPN, $include_parameters = false)
+    {
+        if ($IPN == '') {
             return null;
         }
-        
+
         $endpoint = $this->inventree_url . "/api/part/?IPN=$IPN";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -170,21 +176,22 @@ class Inventree{
         curl_close($curl);
         $response_data = json_decode($response);
 
-        if(!empty($response_data)) {
+        if (!empty($response_data)) {
             $part = $response_data[0];
-            
+
             if ($include_parameters) {
                 $parameters = $this->getParametersForParts([$part->pk]);
                 $part->parameters = isset($parameters[$part->pk]) ? $parameters[$part->pk] : [];
             }
-            
+
             return $part;
         }
         return null;
     }
 
-    function getBOMByPartId($part_id){
-        
+    function getBOMByPartId($part_id)
+    {
+
         $endpoint = $this->inventree_url . "/api/bom/?part=$part_id";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -208,7 +215,8 @@ class Inventree{
         return $response_data;
     }
 
-    function getSalesOrderById($id){
+    function getSalesOrderById($id)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/$id/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -231,8 +239,9 @@ class Inventree{
         return $response;
     }
 
-    function getSalesOrderByReference($reference){
-        if($reference == '' || is_null($reference)) {
+    function getSalesOrderByReference($reference)
+    {
+        if ($reference == '' || is_null($reference)) {
             return null;
         }
         $endpoint = $this->inventree_url . "/api/order/so/?reference=$reference";
@@ -255,13 +264,14 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         $response_data = json_decode($response);
-        if(!empty($response_data)) {
+        if (!empty($response_data)) {
             return $response_data[0];
         }
         return null;
     }
 
-    function createSalesOrder($data){
+    function createSalesOrder($data)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -285,7 +295,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function addLineItemToSalesOrder($item){
+    function addLineItemToSalesOrder($item)
+    {
         $endpoint = $this->inventree_url . "/api/order/so-line/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -309,7 +320,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function removeLineItemFromSalesOrder($id){
+    function removeLineItemFromSalesOrder($id)
+    {
         $endpoint = $this->inventree_url . "/api/order/so-line/$id/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -332,7 +344,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function issueOrder($id){
+    function issueOrder($id)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/$id/issue/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -354,8 +367,9 @@ class Inventree{
         curl_close($curl);
         return json_decode($response);
     }
-    
-    function createCompany($data){
+
+    function createCompany($data)
+    {
         $endpoint = $this->inventree_url . "/api/company/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -379,7 +393,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function getCompany($name, $email){
+    function getCompany($name, $email)
+    {
 
         $name = urlencode($name);
         $endpoint = $this->inventree_url . "/api/company/?name=$name";
@@ -403,27 +418,28 @@ class Inventree{
         $response_data = json_decode($response);
         curl_close($curl);
 
-        if($response_data != NULL) {
+        if ($response_data != NULL) {
             $count = count($response_data);
-            if($count == 0){
+            if ($count == 0) {
                 return NULL;
             } else {
-                $companies = array_filter($response_data, function($company) use ($email) {
+                $companies = array_filter($response_data, function ($company) use ($email) {
                     return $company->email == $email;
                 });
 
-                if(count($companies) == 0) {
+                if (count($companies) == 0) {
                     return NULL;
                 } else {
                     return array_values($companies)[0];
                 }
-            } 
+            }
         }
 
-        return NULL;   
+        return NULL;
     }
 
-    function getShipmentById($id){
+    function getShipmentById($id)
+    {
 
         $endpoint = $this->inventree_url . "/api/order/so/shipment/$id/";
         $curl = curl_init();
@@ -444,10 +460,11 @@ class Inventree{
 
         $response = curl_exec($curl);
         curl_close($curl);
-        return json_decode($response);     
+        return json_decode($response);
     }
 
-    function getShipmentBySalesOrderId($id){
+    function getShipmentBySalesOrderId($id)
+    {
 
         $endpoint = $this->inventree_url . "/api/order/so/shipment/?order=$id";
         $curl = curl_init();
@@ -468,10 +485,11 @@ class Inventree{
 
         $response = curl_exec($curl);
         curl_close($curl);
-        return json_decode($response);     
+        return json_decode($response);
     }
 
-    function createShipment($data){
+    function createShipment($data)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/shipment/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -495,7 +513,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function getStockByIPN($IPN){
+    function getStockByIPN($IPN)
+    {
         $endpoint = $this->inventree_url . "/api/stock/?IPN=$IPN";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -516,13 +535,14 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         $response_data = json_decode($response);
-        if(!empty($response_data)) {
+        if (!empty($response_data)) {
             return $response_data[0];
         }
         return null;
     }
 
-    function getStockByBarcode($barcode){
+    function getStockByBarcode($barcode)
+    {
         $endpoint = $this->inventree_url . "/api/stock/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -544,21 +564,22 @@ class Inventree{
         curl_close($curl);
         $response_data = json_decode($response);
 
-        $filteredStocks = array_filter($response_data, function($item) use ($barcode){
+        $filteredStocks = array_filter($response_data, function ($item) use ($barcode) {
             return $item->barcode_hash === $barcode;
         });
         $stocks_count = sizeof($filteredStocks);
-        if($stocks_count > 1) {
-            $found = array_filter($filteredStocks, function($item) {
+        if ($stocks_count > 1) {
+            $found = array_filter($filteredStocks, function ($item) {
                 return $item->child_items > 0;
             });
-            return empty($found)? null : reset($found);
+            return empty($found) ? null : reset($found);
         } else {
-            return empty($filteredStocks)? null : reset($filteredStocks);
+            return empty($filteredStocks) ? null : reset($filteredStocks);
         }
     }
 
-    function allocateStockItems($sales_order_id, $data) {
+    function allocateStockItems($sales_order_id, $data)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/$sales_order_id/allocate/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -582,7 +603,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function completeShipment( $shipment_id, $data) {
+    function completeShipment($shipment_id, $data)
+    {
 
         $endpoint = $this->inventree_url . "/api/order/so/shipment/$shipment_id/ship/";
         $curl = curl_init();
@@ -607,7 +629,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function completeOrder($sales_order_id) {
+    function completeOrder($sales_order_id)
+    {
         $data = array(
             'accept_incomplete' => true
         );
@@ -635,7 +658,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function updateShipment($shipment_id, $data) {
+    function updateShipment($shipment_id, $data)
+    {
         $endpoint = $this->inventree_url . "/api/order/so/shipment/$shipment_id/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -659,7 +683,8 @@ class Inventree{
         return json_decode($response);
     }
 
-    function getLineItem($sales_order_id, $part_id) {
+    function getLineItem($sales_order_id, $part_id)
+    {
         $endpoint = $this->inventree_url . "/api/order/so-line/?order=$sales_order_id&part=$part_id";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -680,13 +705,14 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         $response_data = json_decode($response);
-        if(!empty($response_data)) {
+        if (!empty($response_data)) {
             return $response_data[0];
         }
         return null;
     }
 
-    function getLineItems($sales_order_id) {
+    function getLineItems($sales_order_id)
+    {
         $endpoint = $this->inventree_url . "/api/order/so-line/?order=$sales_order_id";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -710,7 +736,8 @@ class Inventree{
         return $response_data;
     }
 
-    function getInventreeParts(){
+    function getInventreeParts()
+    {
         $endpoint = $this->inventree_url . "/api/parts/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -731,10 +758,10 @@ class Inventree{
         $response = curl_exec($curl);
         curl_close($curl);
         return $response;
-    
     }
 
-    function createBuild(){
+    function createBuild()
+    {
         $endpoint = $this->inventree_url . "/api/build/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -757,7 +784,8 @@ class Inventree{
         return $response;
     }
 
-    function getBuild(){
+    function getBuild()
+    {
         $endpoint = $this->inventree_url . "/api/build/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -777,10 +805,11 @@ class Inventree{
 
         $response = curl_exec($curl);
         curl_close($curl);
-        return $response;    
+        return $response;
     }
 
-    function getStock(){
+    function getStock()
+    {
         $endpoint = $this->inventree_url . "/api/stock/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -803,7 +832,8 @@ class Inventree{
         return $response;
     }
 
-    function updateStock(){
+    function updateStock()
+    {
         $endpoint = $this->inventree_url . "/api/stock/";
         $curl = curl_init();
         curl_setopt_array($curl, array(
