@@ -107,7 +107,7 @@ add_action('template_redirect', 'check_stock', 1);
 function ajax_fetch() {
 ?>
     <script type="text/javascript">
-        function fetch(){
+        function fetch2(){//i hate you...
             if( jQuery('#keyword').val().length >= 3 )
             {
                 jQuery('#predictive-search').show();

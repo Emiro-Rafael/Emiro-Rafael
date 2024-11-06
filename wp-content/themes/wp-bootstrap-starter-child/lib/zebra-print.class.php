@@ -3,15 +3,15 @@
 class ZebraPrint
 {
     private static $instance = null;
-    
+
     private $zebraprint_url = 'https://api.zebra.com/v2/devices/printers/send';
 
     private $zebraprint_key;
-    
-    private $zebraprint_tenant;
-    
 
-    function __construct() 
+    private $zebraprint_tenant;
+
+
+    function __construct()
     {
         $this->zebraprint_key = $_ENV['zebraprint_key'];
         $this->zebraprint_tenant = $_ENV['zebraprint_tenant'];

@@ -2590,6 +2590,27 @@ body.s-menu-open {
     line-height: 86%;
     font-size: 100px;
 }
+#warehouse-pick-box-size dl {
+    max-width: 400px;
+    margin: 0 auto;
+    font-size: 0;
+}
+#warehouse-pick-box-size dt, 
+#warehouse-pick-box-size dd {
+    display: inline-block;
+    width: 50%;
+    margin: 10px 0;
+    font-size: 18px;
+}
+#warehouse-pick-box-size dt {
+    text-align: right;
+    padding-right: 10px;
+}
+#warehouse-pick-box-size dd {
+    text-align: left;
+    padding-left: 10px;
+    font-weight: bold;
+}
 
 .warehouse__pick-subtitle {
     font-weight: 700;
@@ -2687,9 +2708,9 @@ body.s-menu-open {
 .warehouse__pack.small .warehouse__pack-img.small,
 .warehouse__pack.medium .warehouse__pack-img.medium,
 .warehouse__pack.large .warehouse__pack-img.large,
-.warehouse__pack.xl .warehouse__pack-img.xl,
-.warehouse__pack.lil-brown .warehouse__pack-img.lil-brown,
-.warehouse__pack.big-brown .warehouse__pack-img.big-brown{
+.warehouse__pack.xtra_large .warehouse__pack-img.xtra_large,
+.warehouse__pack.lil_brown .warehouse__pack-img.lil_brown,
+.warehouse__pack.big_brown .warehouse__pack-img.big_brown{
     display: block;
 }
 .warehouse__pack-inner {

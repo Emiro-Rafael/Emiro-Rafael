@@ -487,3 +487,41 @@ add_action( 'rest_api_init', function() {
         'capability' => '',
     ) );
 } );
+
+function get_latest_preorder_shipping_date(WP_REST_Request $request)
+{
+    try
+    {    
+        $data = array_map( 'esc_attr', $request->get_params() );
+
+        $latest_preorder_shipping_date = '';
+
+        $item_ids = explode(',', $data['item_ids']);
+
+        foreach($item_ids as $item_id)
+        {
+            $preorder_shipping_date = get_post_meta( $item_id, 'preorder-shipping-date', true );
+            if(empty($preorder_shipping_date)) continue;
+
+            if(empty($latest_preorder_shipping_date) && strtotime($preorder_shipping_date) > time()) {
+                $latest_preorder_shipping_date = $preorder_shipping_date;
+            } elseif(strtotime($preorder_shipping_date) > strtotime($latest_preorder_shipping_date)  && strtotime($preorder_shipping_date) > time()) {
+                $latest_preorder_shipping_date = $preorder_shipping_date;
+            }
+        }
+
+        return $latest_preorder_shipping_date;
+    }
+    catch(Exception $e)
+    {
+        return false;
+    }
+}
+
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'candybar-api/v1', 'get-latest-preorder-shipping-date', array(
+        'methods'  => 'GET',
+        'callback' => 'get_latest_preorder_shipping_date',
+        'capability' => '',
+    ) );
+} );

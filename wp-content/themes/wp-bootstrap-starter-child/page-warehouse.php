@@ -7,7 +7,7 @@ global $hide_footer;
 $is_redesign_page = true;
 $hide_footer = true;
 
-if(isset($_GET['logout'])){
+if (isset($_GET['logout'])) {
     unset($_COOKIE['warehouse_id']);
     unset($_GET['logout']);
 }
@@ -21,20 +21,20 @@ echo "<script>let template_path = '$template_path'</script>";
 get_header();
 ?>
 
-<?php if(!$user): ?>
+<?php if (!$user): ?>
     <div class="auth">
         <div class="container">
             <div class="auth__box">
                 <div class="auth__title title-h3">
                     <h1>Login</h1>
                 </div>
-                <form class="auth__form form form--no-errors" action="<?php echo admin_url( 'admin-ajax.php' );?>" method="post">
+                <form class="auth__form form form--no-errors" action="<?php echo admin_url('admin-ajax.php'); ?>" method="post">
                     <input type="hidden" name="action" value="login_warehouse">
                     <div class="form__message">
                     </div>
                     <div class="auth__form-row">
                         <div class="input input--round">
-                            <input type="email" name="email" placeholder="Email Address"  required>
+                            <input type="email" name="email" placeholder="Email Address" required>
                         </div>
                     </div>
                     <div class="auth__form-row">
@@ -55,8 +55,8 @@ get_header();
     $active_pack_order = get_user_meta($user->ID, 'active_pack_order', true);
     ?>
     <script>
-      let warehouse_active_pick_order = <?= (!empty($active_order) ? json_encode($active_order, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '{}') ?>;
-      let warehouse_active_pack_order = <?= (!empty($active_pack_order) ? json_encode($active_pack_order, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '{}') ?>;
+        let warehouse_active_pick_order = <?= (!empty($active_order) ? json_encode($active_order, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '{}') ?>;
+        let warehouse_active_pack_order = <?= (!empty($active_pack_order) ? json_encode($active_pack_order, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) : '{}') ?>;
     </script>
     <div id="barcode-input" contenteditable="true" inputmode="none" style="width: 1px; height: 100vh; opacity: 0; position: fixed; top: 0"></div>
     <div class="warehouse">
@@ -75,7 +75,7 @@ get_header();
                 <div class="warehouse__title">
                     <h2>POWER PICK</h2>
                 </div>
-                
+
             </div>
             <div class="warehouse__page" data-page="pack">
                 <div class="warehouse__title">
@@ -86,7 +86,7 @@ get_header();
                         <span>Scan Packing List to begin</span>
                     </div>
                     <div class="warehouse__scanner-img">
-                        <img src="<?=$template_path?>/assets/images/ico-barcode.png" alt="Barcode">
+                        <img src="<?= $template_path ?>/assets/images/ico-barcode.png" alt="Barcode">
                     </div>
                 </div>
                 <div class="warehouse__pack" style="display: none">
@@ -95,16 +95,17 @@ get_header();
                             <div class="warehouse__pack-title">
                                 <span>Box size:</span>
                             </div>
-                            <img src="<?=$template_path?>/assets/images/ico-box-small.svg" class="warehouse__pack-img small" alt="SMALL">
-                            <img src="<?=$template_path?>/assets/images/ico-box-medium.svg" class="warehouse__pack-img medium" alt="MEDIUM">
-                            <img src="<?=$template_path?>/assets/images/ico-box-large.svg" class="warehouse__pack-img large" alt="LARGE">
-                            <img src="<?=$template_path?>/assets/images/ico-box-xl.svg" class="warehouse__pack-img xl" alt="XL">
-                            <img src="<?=$template_path?>/assets/images/ico-box-brown-lil.svg" class="warehouse__pack-img lil-brown" alt="LIL BROWN">
-                            <img src="<?=$template_path?>/assets/images/ico-box-brown-big.svg" class="warehouse__pack-img big-brown" alt="BIG BROWN">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-small.svg" class="warehouse__pack-img small" alt="SMALL">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-medium.svg" class="warehouse__pack-img medium" alt="MEDIUM">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-large.svg" class="warehouse__pack-img large" alt="LARGE">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-xl.svg" class="warehouse__pack-img xtra_large" alt="XL">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-lil-brown.svg" class="warehouse__pack-img lil_brown" alt="LIL BROWN">
+                            <img src="<?= $template_path ?>/assets/images/ico-box-big-brown.svg" class="warehouse__pack-img big_brown" alt="BIG BROWN">
                         </div>
                         <div class="warehouse__pack-content">
                             <div class="warehouse__pick-info">
-                                <p><strong>Order #${order.id}</strong></p>
+                                <input type="hidden" id="label_url" value="">
+                                <p><strong>Order ${order.id}</strong></p>
                                 <p>${order.name}</p>
                                 <p>${order.address_1}</p>
                                 <p>${order.address_2}</p>
@@ -121,11 +122,11 @@ get_header();
                 <div class="warehouse__title">
                     <h2>UTILITIES</h2>
                 </div>
-                
+
             </div>
         </div>
     </div>
-    
+
     <div style="display: none">
         <div class="popup popup--medium popup--no-close" id="warehouse-error">
             <div class="popup__inner">
@@ -138,8 +139,8 @@ get_header();
                 </div>
             </div>
         </div>
-        
-        
+
+
         <div class="popup popup--small popup--no-close" id="warehouse-pick-barcode">
             <div class="popup__inner">
                 <div class="auth__title title-h1 small">
@@ -156,7 +157,20 @@ get_header();
                     <span>CONFIRM Quantity</span>
                 </div>
                 <div class="warehouse__quantity warehouse__quantity--red js-pick-quantity">
-                
+
+                </div>
+                <div class="auth__btn">
+                    <button type="button" class="btn" data-fancybox-close>Confirm</button>
+                </div>
+            </div>
+        </div>
+        <div class="popup popup--small popup--no-close" id="warehouse-pick-box-size">
+            <div class="popup__inner">
+                <div class="auth__title title-h1 small">
+                    <span>Suitable Bundle Orders Box Size</span>
+                </div>
+                <div class="js-pick-box-size">
+
                 </div>
                 <div class="auth__btn">
                     <button type="button" class="btn" data-fancybox-close>Confirm</button>
@@ -169,7 +183,7 @@ get_header();
                     <span>CONFIRM Customization</span>
                 </div>
                 <div class="warehouse__warning js-pick-customization">
-                
+
                 </div>
                 <div class="auth__btn">
                     <button type="button" class="btn" data-fancybox-close>Confirm</button>
@@ -187,7 +201,7 @@ get_header();
                 <div class="warehouse__remaining">
                     <span class="js-pick-num">0</span>
                 </div>
-                
+
                 <div class="auth__btn">
                     <button type="button" class="btn js-pick-start">GET STARTED</button>
                 </div>

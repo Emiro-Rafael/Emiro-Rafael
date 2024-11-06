@@ -109,7 +109,7 @@
 
         <div class="nav-row-2 w-100 order-lg-3 ml-lg-4">
             <form class="form-inline my-2 my-lg-0 position-relative">
-                <input class="form-control border-0 bg-gray-light h7 w-100" id="keyword" onkeyup="fetch()" type="search" placeholder="Search" aria-label="Search" value="<?php echo $_GET['search'] ?? '';?>">
+                <input class="form-control border-0 bg-gray-light h7 w-100" id="keyword" onkeyup="fetch2()" type="search" placeholder="Search" aria-label="Search" value="<?php echo $_GET['search'] ?? '';?>">
                 <button aria-label="search" id="searchSubmit" class="text-gray bg-transparent border-0 position-absolute p-0" type="submit"><i class="fas fa-search"></i></button>
             </form>
             <div id="predictive-search" class="px-3 py-1"></div>

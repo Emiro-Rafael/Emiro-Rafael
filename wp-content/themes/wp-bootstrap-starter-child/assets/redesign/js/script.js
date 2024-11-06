@@ -1292,11 +1292,79 @@ function blocks() {
         attention_2: new Audio(template_path+'/assets/redesign/audio/attention_2.wav'),
         incorrect: new Audio(template_path+'/assets/redesign/audio/incorrect.wav'),
       }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      async function apiRequest(action, query, errorMsg = '') {
+        try {
+          const body = new FormData();
+          body.append('action', action);
+      
+          Object.entries(query).forEach(([key, value]) => {
+            if (value instanceof File) {
+              // This is a File object, so just append it directly
+              body.append(key, value);
+            } else if (typeof value === "object") {
+              // This is another type of object, so stringify it
+              body.append(key, JSON.stringify(value));
+            } else {
+              // This is a simple value, so append it as is
+              body.append(key, value);
+            }
+          });
+      
+          const response = await fetch('/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body,
+          });
+
+          if (!response.ok) {
+            throw new Error('Server Error.');
+          }
+          let data = await response.json();
+      
+          if(data.status === 0) throw new Error(data.data ? data.data : 'Api Error.');
+      
+          return data.data;
+        } catch (error) {
+          console.log('apiRequest error', error.message);		
+          return {error: error.message ? error.message : errorMsg, status: error.status};
+        }
+      }
+
+
       let pagesCallbacks = {
         'pick': function (pickPage) {
           let modals = {
             'queue': document.getElementById('warehouse-pick-queue'),
             'quantity': document.getElementById('warehouse-pick-quantity'),
+            'boxsize': document.getElementById('warehouse-pick-box-size'),
             'customization': document.getElementById('warehouse-pick-customization'),
             'barcode': document.getElementById('warehouse-pick-barcode'),
           }
@@ -1355,10 +1423,49 @@ function blocks() {
               }
             };
           }
+          async function showOrdersBundleBoxSize(order) {
+            let size_data = false;
+    
+            if (order.box_size_data?.length) {
+              size_data = order.box_size_data;
+            } else {
+              size_data = await apiRequest('calc_orders_bundle_box_size', {'orders_bundle_data': order});
+            }
+    
+            if(!size_data) return false;
+    
+            return showBoxDimensionPopup(`<dl>
+              <dt>Box: </dt> <dd>${size_data.suitable_box || 'No suitable box found'}</dd>
+              <dt>Weight:</dt> <dd>${size_data.total_weight} oz</dd>
+              <dt>Volume: </dt> <dd>${size_data.total_volume} in³</dd>
+              <dt>Max dimension:</dt> <dd>${size_data.max_dimension} in</dd>
+            </dl>`);
+          }
           const showPickIncorrectBarcode = () => {
             return new Promise((resolve) => {
               Fancybox.show([{
                 src: '#' + modals.barcode.id,
+                type: 'inline',
+                placeFocusBack: false,
+                trapFocus: false,
+                autoFocus: false,
+              }], {
+                dragToClose: false,
+                on: {
+                  "destroy": () => resolve()
+                }
+              });
+            });
+          };
+          const showBoxDimensionPopup = (html) => {
+            return new Promise((resolve) => {
+              const quantityElement = modals.boxsize.querySelector('.js-pick-box-size');
+              quantityElement.style.fontSize = '18px';
+              quantityElement.style.textAlign = 'center'; 
+              quantityElement.innerHTML = html;
+          
+              Fancybox.show([{
+                src: '#' + modals.boxsize.id,
                 type: 'inline',
                 placeFocusBack: false,
                 trapFocus: false,
@@ -1417,6 +1524,7 @@ function blocks() {
             pickPage.insertAdjacentHTML('beforeend', `
             <div class="warehouse__pick" data-order-id="${order.id}">
               <div class="warehouse__pick-info">
+                <input type="hidden" id="label_url" value="">
                 <p><strong>Order #${order.id}</strong></p>
                 <p>${order.name}</p>
                 <p>${order.address_1}</p>
@@ -1721,8 +1829,7 @@ function blocks() {
 
           function checkBarcodes(order) {
             const issues = [];
-            return issues;
-            const requiredParams = ['Height', 'Length', 'Width', 'Weight'];
+            const requiredParams = ['height', 'length', 'width', 'weight'];
         
             Object.entries(order.items).forEach(([itemId, item]) => {
                 if (itemId.startsWith('country-')) {
@@ -1810,8 +1917,11 @@ function blocks() {
             };
           })
 
-          dynamicListener('click', '.js-pick-complete', function (e) {
+          dynamicListener('click', '.js-pick-complete', async function (e) {
             e.preventDefault()
+            
+            // await showOrdersBundleBoxSize(warehouse_active_pick_order);
+
             let btn = this
             let orderId = btn.closest('[data-order-id]').dataset.orderId
             let formData = new FormData();
@@ -1930,22 +2040,34 @@ function blocks() {
               fadeIn(packBlock, 300)
             })
 
-            packBlock.classList.remove('small', 'medium', 'large', 'xl', 'lil-brown', 'big-brown')
-            packBlock.classList.add(order.box_size)
+            packBlock.classList.remove('small', 'medium', 'large', 'xtra_large', 'lil_brown', 'big_brown')
+            if(order.box_size){
+              let box_size = JSON.parse(order.box_size);
+              packBlock.classList.add(box_size.suitable_box);
+            }
 
             packBlock.dataset.orderId = order.id
+            packBlock.dataset.orderIds = order.order_ids.join(',')
+
+            let ordersString = '#' + order.order_ids.join(', #');
 
             infoEl.innerHTML = `
-              <p><strong>Order #${order.id}</strong></p>
+              <input type="hidden" id="label_url" value="${order.label_url}">
+              <p><strong>Order ${ordersString}</strong></p>
               <p>${order.name}</p>
               <p>${order.address_1}</p>
               <p>${order.address_2}</p>
+              <p>${order.city}, ${order.state} ${order.zipcode}</p>
+              <p>${order.country}</p>
             `;
           }
 
           function onBarcodeInput(barcode) {
             let formData = new FormData();
             let xhr = new XMLHttpRequest();
+            let packPage = $(".warehouse__page[data-page='pack']")[0];
+
+            $("#label_url").val();
 
             packPage.classList.add('is-loading')
 
@@ -1960,6 +2082,10 @@ function blocks() {
               if (xhr.status === 200) {
                 startPack(data.data)
                 warehouse_active_pack_order = data.data
+
+                if(data.data.label_url){
+                  sendLabelPrintCommand(data.data.label_url);
+                }
               } else {
                 showPackError(data.data, function () {
                   currentBarcodeInstance = waitForBarcode(false, onBarcodeInput)
@@ -1991,38 +2117,50 @@ function blocks() {
           dynamicListener('click', '.js-pack-reprint', function (e) {
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
-            let formData = new FormData();
-            let xhr = new XMLHttpRequest();
+            let label_url = $("#label_url").val();
+            let packPage = $(".warehouse__page[data-page='pack']")[0];
 
+            if(!label_url){
+              showPackError({text: "Label file not found", title: "Error printing label"});
+              return;
+            }
+
+            packPage.classList.add('is-loading')
             btn.setAttribute('disabled', 'disabled')
 
-            formData.append('action', 'send_print_pack_request')
-            formData.append('order_id', orderId)
+            let xhr = new XMLHttpRequest();
+            let formData = new FormData();
+
+            formData.append('action', 'print_label')
+            formData.append('printerId', 'T3J243201304')
+            formData.append('fileUrl', label_url)
 
             xhr.open('post', '/wp-admin/admin-ajax.php');
             xhr.send(formData);
             xhr.onload = function() {
               let data = xhr.responseText
               try { data = JSON.parse(data) } catch (error) {}
-
-              if(xhr.status !== 200){
+              if (xhr.status !== 200) {
                 showPackError(data.data)
               }
               btn.removeAttribute('disabled')
+              packPage.classList.remove('is-loading')
             };
           })
+
           dynamicListener('click', '.js-pack-complete', function (e) {
             e.preventDefault()
             let btn = this
-            let orderId = btn.closest('[data-order-id]').dataset.orderId
+            let orderIds = btn.closest('[data-order-ids]').dataset.orderIds
             let formData = new FormData();
             let xhr = new XMLHttpRequest();
+
+            orderIds = orderIds.split(',');
 
             btn.setAttribute('disabled', 'disabled')
 
             formData.append('action', 'complete_pack_order')
-            formData.append('order_id', orderId)
+            formData.append('order_ids', orderIds)
 
             xhr.open('post', '/wp-admin/admin-ajax.php');
             xhr.send(formData);
@@ -2039,6 +2177,30 @@ function blocks() {
             };
           })
         },
+      }
+
+      async function sendLabelPrintCommand(label_url)
+      {
+        let xhr = new XMLHttpRequest();
+        let formData = new FormData();
+        let packPage = $(".warehouse__page[data-page='pack']")[0];
+
+        formData.append('action', 'print_label')
+        formData.append('printerId', 'T3J243201304')
+        formData.append('fileUrl', label_url)
+
+        xhr.open('post', '/wp-admin/admin-ajax.php');
+        xhr.send(formData);
+        xhr.onload = function() {
+          let data = xhr.responseText
+          try { data = JSON.parse(data) } catch (error) {}
+          if (xhr.status === 200) {
+            packPage.classList.remove('is-loading')
+          } else {
+            showPackError(data.data)
+          }
+          packPage.classList.remove('is-loading')
+        };
       }
 
       function waitForBarcode(barcode=false, afterFunction=()=>{}) {
@@ -2085,7 +2247,6 @@ function blocks() {
       }
 
       section.addEventListener('show', function (e) {
-        console.log(currentBarcodeInstance)
         if(typeof pagesCallbacks[e.target.dataset.page] === 'function'){
           pagesCallbacks[e.target.dataset.page](e.target)
         }

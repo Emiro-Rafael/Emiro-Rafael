@@ -18,10 +18,12 @@ class WarehouseAjax extends SCAjax
                 'get_orders_in_queue' => 'getOrdersInQueue',
                 'send_print_request' => 'sendPrintRequest',
                 'complete_order' => 'completeOrder',
-
+                'calc_orders_bundle_box_size' => 'calcOrdersBundleBoxSize',
                 'get_packing_list' => 'getPackingList',
                 'send_print_pack_request' => 'sendPrintPackRequest',
                 'complete_pack_order' => 'completePackOrder',
+
+                'print_label' => 'printLabel'
             ]
         );
     }
@@ -71,6 +73,7 @@ class WarehouseAjax extends SCAjax
 
     private static function validateWarehouseUserAccess()
     {
+
         $user = isset($_COOKIE['warehouse_id']) ? get_user_by('id', $_COOKIE['warehouse_id']) : false;
         if (!$user) {
             return wp_send_json_error(['error' => 'not_logged_in'], 300);
@@ -83,6 +86,118 @@ class WarehouseAjax extends SCAjax
 
 
     // POWER PICK
+
+    public static function getSuitebleOrdersBundleBoxSize($orders_bundle_data, $box_sizes)
+    {
+
+        function gramToOz($grams)
+        {
+            return $grams * 0.03527396;
+        }
+        $dimensions = [];
+
+        foreach ($orders_bundle_data['items'] as $item) {
+            // If item has nested products (like country products)
+            if (is_array($item) && !isset($item['parameters'])) {
+                $products = array_values($item);
+            } else {
+                $products = [$item];
+            }
+
+            // Process each product
+            foreach ($products as $product) {
+                $quantity = $product['quantity'] ?? 1;
+
+                // Add dimensions for each quantity
+                for ($i = 0; $i < $quantity; $i++) {
+                    $dimensions[] = [
+                        'length' => floatval($product['parameters']['length']['value']),
+                        'width'  => floatval($product['parameters']['width']['value']),
+                        'height' => floatval($product['parameters']['height']['value']),
+                        'weight' => floatval($product['parameters']['weight']['value'])
+                    ];
+                }
+            }
+        }
+
+        // Calculate totals
+        $total_weight = 0;
+        $total_volume = 0;
+        $max_dimension = 0;
+
+        foreach ($dimensions as $dim) {
+            $total_weight += $dim['weight'];
+            $total_volume += $dim['length'] * $dim['width'] * $dim['height'];
+            $max_dimension = max($max_dimension, $dim['length'], $dim['width'], $dim['height']);
+        }
+
+        // Find suitable box
+        $suitable_box = null;
+        foreach ($box_sizes as $box) {
+            $box_max_dim = max($box->int_length, $box->int_width, $box->int_height);
+            $box_volume = $box->int_length * $box->int_width * $box->int_height;
+
+            if ($box_max_dim >= $max_dimension && $box_volume >= $total_volume) {
+                $suitable_box = $box;
+                break;
+            }
+        }
+
+        return (object) [
+            'suitable_box' => $suitable_box ? $suitable_box->name : null,
+            'total_weight' => round(gramToOz($total_weight), 2),
+            'total_volume' => round($total_weight, 0),
+            'max_dimension' => $max_dimension
+        ];
+    }
+
+    public static function calcOrdersBundleBoxSize()
+    {
+        if (!self::validateWarehouseUserAccess()) return;
+
+        if (empty($_POST['orders_bundle_data'])) {
+            wp_send_json_error('No order bundle data received', 400);
+            return;
+        }
+        // Get order data from POST
+        $orders_bundle_data = json_decode(stripslashes($_POST['orders_bundle_data']), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error([
+                'message' => 'JSON decode error: ' . json_last_error_msg(),
+                'raw_data' => $_POST['orders_bundle_data']
+            ]);
+            return;
+        }
+
+        if (empty($orders_bundle_data['items'])) {
+            wp_send_json_error(['message' => 'Invalid order data structure']);
+            return;
+        }
+
+
+        $warehouse = new Warehouse();
+        $box_sizes = $warehouse->getBoxSizes();
+
+        if (empty($box_sizes)) return wp_send_json_error('No box sizes found', 400);
+
+        $bundle_box_data = self::getSuitebleOrdersBundleBoxSize($orders_bundle_data, $box_sizes);
+
+
+        $result = [
+            'suitable_box' => $bundle_box_data->suitable_box ?? '',
+            'total_weight' => $bundle_box_data->total_weight ?? 0,
+            'total_volume' => $bundle_box_data->total_volume ?? 0,
+            'max_dimension' => $bundle_box_data->max_dimension ?? 0
+        ];
+
+        if ($bundle_box_data) {
+            $resultSaving = $warehouse->saveOrdersBundleBoxSize(explode(",", $orders_bundle_data['id']), $result);
+        }
+
+        return wp_send_json_success($result);
+    }
+
     public static function getOrderFromQueue()
     {
         if (!self::validateWarehouseUserAccess()) return;
@@ -93,13 +208,9 @@ class WarehouseAjax extends SCAjax
             $items = $warehouse->getNextOrder(false);
             $customer_info = $warehouse->getCustomerInformation();
 
-            // $items['items'][0]['item_name'] = 'Allergy Test - Scan Skittles Chewies';
-            // $items['items'][0]['quantity'] = '1';
-            // $items['items'][0]['barcode'] = '4009900538800';
-            // $items['items'][0]['customization'] = 'Allergy: Strawberries | No coconut (receive muliple Coconut Free Snacks, and a few other randoms, to fulfill the crate for August)';
-
             $order = [
                 'id' => $items['ids'],
+                'box_size_data' => $items['box_size_data'],
                 'name' => $customer_info->shipping_name,
                 'address_1' => $customer_info->address_1 . " " . $customer_info->address_2,
                 'address_2' => $customer_info->city . " " . $customer_info->state . " " . $customer_info->zip,
@@ -442,34 +553,115 @@ class WarehouseAjax extends SCAjax
     // POWER PACK
     public static function getPackingList()
     {
-        if (!self::validateWarehouseUserAccess()) return;
+        if (!self::validateWarehouseUserAccess()) {
+            return;
+        }
 
         $packing_barcode = $_POST['packing_barcode'];
 
+        $dbh = SCModel::getSnackCrateDB();
+
+        $stmt = $dbh->prepare("SELECT candybar_order.*, Address.shipping_name AS name, Address.address_1, Address.address_2,
+                                      Address.city, Address.state, Address.country, Address.zipcode  
+                               FROM candybar_order 
+                               LEFT JOIN Address ON Address.id = candybar_order.shipping_address
+                               WHERE barcode_reference = :barcode_reference");
+
+        $stmt->bindParam(":barcode_reference", $packing_barcode);
+        $stmt->execute();
+
+        $order = null;
+
+        while ($o = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!$order) {
+                $order = $o;
+                $order['order_ids'] = [$order['id']];
+                continue;
+            }
+
+            $order['order_ids'][] = $o['id'];
+        }
 
 
-        // Find order info and box size by packing_barcode
-        $order = [
-            'id' => '321',
-            'name' => 'Kyleasdf Roarke',
-            'address_1' => '1750ff Wewatta St. Unit 1929',
-            'address_2' => 'Denver hhhColorado 80202',
+        if (!$order) {
+            wp_send_json_error([
+                'title' => 'Shipment error',
+                'text' => 'Shipment does not exist.',
+            ], 406);
 
-            'box_size' => 'small', // small || medium || large || xl || lil-brown || big-brown
-        ];
+            return;
+        }
 
+        if ($order['status'] == 'fulfilled') {
+            wp_send_json_error([
+                'title' => 'Shipment error',
+                'text' => 'This shipment has already been completed.',
+            ], 406);
 
+            return;
+        }
 
+        if (!$order['shipment_id'] && !$order['shipment_error']) {
+            wp_send_json_error([
+                'title' => 'Shipment error',
+                'text' => 'This shipment has not completed purchasing. Please wait a few minutes and try again.',
+            ], 406);
 
-        // If everything is good
-        update_user_meta(intval($_COOKIE['warehouse_id']), 'active_pack_order', $order);
+            return;
+        }
+
+        if (!$order['shipment_id'] && $order['shipment_error']) {
+            wp_send_json_error([
+                'title' => 'Shipment error',
+                'text' => $order['shipment_error'],
+            ], 406);
+
+            return;
+        }
+
+        $shipmentId = $order['shipment_id'];
+
+        $stmt = null;
+
+        // If order has shipment_id, use easypost api to retreive label url
+        $easyPostHelper = new EasyPostHelper();
+
+        try {
+            $label = $easyPostHelper->getCurrentLabel($shipmentId);
+        } catch (\Exception $e) {
+            wp_send_json_error([
+                'title' => 'Label retrieval error.',
+                'text' => 'Label retrieval failed, try again later',
+            ], 406);
+
+            return;
+        }
+
+        if (!$label) {
+            wp_send_json_error([
+                'title' => 'Label missing.',
+                'text' => 'Label for matched shipment is missing',
+            ], 406);
+
+            return;
+        }
+
+        $order['label_url'] = $label;
+
         wp_send_json_success($order);
+    }
 
-        // If there was an error:
-        wp_send_json_error([
-            'title' => 'THIS IS AN ERROR.',
-            'text' => 'This is the content of the error. This is the content of the error .This is the content of the error.',
-        ], 406);
+    public static function printLabel()
+    {
+        if (!self::validateWarehouseUserAccess()) {
+            return;
+        }
+
+        $zp = new ZebraPrint();
+
+        $response = $zp->sendFileToPrinter($_POST['printerId'], $_POST['fileUrl']);
+
+        wp_send_json($response);
     }
 
     public static function sendPrintPackRequest()
@@ -492,9 +684,17 @@ class WarehouseAjax extends SCAjax
     {
         if (!self::validateWarehouseUserAccess()) return;
 
-        $order_id = $_POST['order_id'];
+        $order_ids = $_POST['order_ids'];
+        $ids = explode(',', $order_ids);
 
-        update_user_meta(intval($_COOKIE['warehouse_id']), 'active_pack_order', []);
+        $dbh = SCModel::getSnackCrateDB();
+
+        $stmt = $dbh->prepare("UPDATE `candybar_order` SET status = 'fulfilled' WHERE id in (:" . implode(',:', array_keys($ids)) . ")");
+        foreach ($ids as $k => $id) {
+            $stmt->bindValue(":" . $k, $id);
+        }
+        $stmt->execute();
+        $stmt = null;
 
         wp_send_json_success();
     }

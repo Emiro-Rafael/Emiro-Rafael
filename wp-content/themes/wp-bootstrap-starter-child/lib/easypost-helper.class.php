@@ -56,6 +56,14 @@ class EasypostHelper
             'email' => $data['email']
         );
 
+        if(in_array($data['country'], ['Canada'])) {
+            $result['country'] = 'CA';
+        } elseif(in_array($data['country'], ['United Kingdom'])) {
+            $result['country'] = 'GB';
+        } else {
+            $result['country'] = 'US';
+        }
+        
         $result['phone'] = !empty($data['phone']) ? $data['phone'] : '9999999999';
 
         return $result;
@@ -127,6 +135,14 @@ class EasypostHelper
         return $label;
     }
 
+    public function getCurrentLabel($shipment_id)
+    {
+        $shipment = \EasyPost\Shipment::retrieve($shipment_id);
+        $label = $shipment->postage_label->label_url;
+
+        return $label;
+    }
+
     public function createShipment($to_address, $parcel, $reference, $quantity = 1, $value = 5, $has_cold_pack = false)
     {
         $from_address = $this->_getFromAddress();
@@ -144,7 +160,7 @@ class EasypostHelper
             )
         );
 
-        if(in_array($to_address['state'], self::INSULAR_AREAS_AND_NON_CONTIGUIOUS_STATES))
+        if(in_array($to_address['state'], self::INSULAR_AREAS_AND_NON_CONTIGUIOUS_STATES) || in_array($to_address['country'], ['CA', 'GB']))
         {
             $customs_item1 = array(
                 "description" => 'Sweets',
