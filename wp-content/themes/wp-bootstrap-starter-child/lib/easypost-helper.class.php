@@ -56,6 +56,14 @@ class EasypostHelper
             'email' => $data['email']
         );
 
+        if(in_array($data['country'], ['Canada'])) {
+            $result['country'] = 'CA';
+        } elseif(in_array($data['country'], ['United Kingdom'])) {
+            $result['country'] = 'GB';
+        } else {
+            $result['country'] = 'US';
+        }
+        
         $result['phone'] = !empty($data['phone']) ? $data['phone'] : '9999999999';
 
         return $result;
@@ -144,7 +152,7 @@ class EasypostHelper
             )
         );
 
-        if(in_array($to_address['state'], self::INSULAR_AREAS_AND_NON_CONTIGUIOUS_STATES))
+        if(in_array($to_address['state'], self::INSULAR_AREAS_AND_NON_CONTIGUIOUS_STATES) || in_array($to_address['country'], ['CA', 'GB']))
         {
             $customs_item1 = array(
                 "description" => 'Sweets',
@@ -223,7 +231,7 @@ class EasypostHelper
 
         if(empty($possible_rates)) {
             $possible_rates = array_filter(
-                $created_shipment->rates,
+                $shipment->rates,
                 function($rate) {
                     if($rate->service == 'Express') return false;
                     if($rate->carrier == 'OSMWorldwide') return false;
